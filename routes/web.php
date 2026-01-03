@@ -5,8 +5,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\InfoController;
+use App\Models\Absensi;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +31,10 @@ Auth::routes([
     'reset' => false,
     'verify' => false,
 ]);
+
+Route::controller(AbsensiController::class)->group(function () {
+    Route::get('/absensi', 'absen')->name('absensi');
+});
 
 Route::get('/home', function () {
     if (auth()->user()) {
