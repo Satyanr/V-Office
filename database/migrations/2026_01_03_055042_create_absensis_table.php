@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('absensis', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('photo_name');
+            $table->string('name')->nullable();
+            $table->string('photo_name')->nullable();
             $table->timestamps();
         });
     }

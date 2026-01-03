@@ -34,6 +34,7 @@ Auth::routes([
 
 Route::controller(AbsensiController::class)->group(function () {
     Route::get('/absensi', 'absen')->name('absensi');
+    Route::post('/absensi', [AbsensiController::class, 'store'])->name('absen.store');
 });
 
 Route::get('/home', function () {

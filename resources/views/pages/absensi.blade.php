@@ -8,28 +8,26 @@
 @section('content')
     <div class="container my-5">
         <div class="shadow p-3 mb-5 bg-body-tertiary rounded-4">
-            <form method="POST" action="#"">
-                @csrf
-                <div class="row">
-                    <div class="col-md-6">
-                        <input type="text" name="name" class="form-control" placeholder="Name" /> <br />
-                        <input type="text" name="email" class="form-control" placeholder="Email Address" /><br />
-                        <input type="password" name="password" class="form-control" placeholder="Password" /><br />
-                        <input type="button" class="btn btn-sm btn-primary" id="open_camera" value ="Open Camera"><br />
-                        <div id="my_camera" class="d-none"></div>
-                        <br />
-                        <input type=button value="Take Snapshot" onClick="take_snapshot()">
-                        <input type="hidden" name="image" class="image-tag">
+                <form method="POST" action="{{ route('absen.store') }}">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" name="name" class="form-control" placeholder="Name" /> <br />
+                            <input type="button" class="btn btn-sm btn-primary" id="open_camera" value ="Open Camera"><br />
+                            <div id="my_camera" class="d-none"></div>
+                            <br />
+                            <input type=button value="Take Snapshot" onClick="take_snapshot()">
+                            <input type="hidden" name="image" class="image-tag">
+                        </div>
+                        <div class="col-md-6">
+                            <div id="results"></div>
+                        </div>
+                        <div class="col-md-12 text-center">
+                            <br />
+                            <button class="btn btn-success">Submit</button>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <div id="results"></div>
-                    </div>
-                    <div class="col-md-12 text-center">
-                        <br />
-                        <button class="btn btn-success">Submit</button>
-                    </div>
-                </div>
-            </form>
+                </form>
         </div>
     </div>
     </div>
