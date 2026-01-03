@@ -7,7 +7,7 @@
 
     <title>Laundry - SMKN 1 Ciamis</title>
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x92" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"

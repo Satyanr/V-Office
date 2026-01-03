@@ -1,9 +1,9 @@
 <nav class="navbar fixed-top navbar-expand-lg" style="background-color: #2F5296 ">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ route('transaksi') }}">
-            <img src="/favicon.png" alt="Logo" width="50" height="50">
+            <img src="/favicon.png" alt="Logo" width="32" height="50">
             <span class="text-white">
-                Laundry SMKN 1 Ciamis
+                V-Office Prototype
             </span>
         </a>
         <button class="navbar-toggler pb-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"

@@ -5,7 +5,7 @@
         </a>
         <span class="text-white"><a
                 href="https://www.instagram.com/officialsecure_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
-                style="text-decoration: none;" class="text-white">© 2024 SECURE</a></span>
+                style="text-decoration: none;" class="text-white">© 2026 SECURE</a></span>
     </div>
 
     <ul class="nav col-md-4 pe-3 justify-content-end list-unstyled d-flex">
