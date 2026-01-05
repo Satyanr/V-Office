@@ -66,8 +66,8 @@
                                         @endif
                                     </td>
                                     <td>{{ $absensi->name }}</td>
-                                    <td>{{ $absensi->created_at->format('d M Y') }}</td>
-                                    <td>{{ $absensi->created_at->format('H:i') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($absensi->waktu_masuk)->format('Y-m-d') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i:s') }}</td>
 
                                     <td>
                                         <a href="javascript:void(0)" class="text-warning"

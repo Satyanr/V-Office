@@ -38,6 +38,7 @@ class AbsensiController extends Controller
         Absensi::create([
             'name' => $request->name,
             'photo_name' => $imageName,
+            'waktu_masuk' => $request->waktu_masuk,
         ]);
 
         // 5. Response

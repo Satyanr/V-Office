@@ -14,9 +14,14 @@
             align-items: center;
             justify-content: center;
         }
-        #my_camera video, #my_camera canvas, #my_camera object, #my_camera embed {
+
+        #my_camera video,
+        #my_camera canvas,
+        #my_camera object,
+        #my_camera embed {
             border-radius: 14px;
         }
+
         .preview-box {
             position: relative;
             background: #f8fafc;
@@ -24,11 +29,13 @@
             min-height: 320px;
             overflow: hidden;
         }
+
         .preview-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         #preview_placeholder {
             position: absolute;
             inset: 0;
@@ -38,6 +45,7 @@
             text-align: center;
             padding: 1rem;
         }
+
         #results {
             position: absolute;
             inset: 0;
@@ -59,18 +67,18 @@
         </div>
 
         {{-- alert success/error --}}
-        @if(session('success'))
+        @if (session('success'))
             <div class="alert alert-success d-flex align-items-center" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i>
                 <div>{{ session('success') }}</div>
             </div>
         @endif
 
-        @if($errors->any())
+        @if ($errors->any())
             <div class="alert alert-danger" role="alert">
                 <div class="fw-semibold mb-1">Gagal:</div>
                 <ul class="mb-0 ps-3">
-                    @foreach($errors->all() as $e)
+                    @foreach ($errors->all() as $e)
                         <li>{{ $e }}</li>
                     @endforeach
                 </ul>
@@ -82,20 +90,22 @@
 
                 <form method="POST" action="{{ route('absen.store') }}" id="absenForm">
                     @csrf
-
+                    <input type="text" name="waktu_masuk" id="waktu_masuk" hidden>
                     <div class="row g-3 align-items-end mb-3">
                         <div class="col-12 col-md-8">
                             <label class="form-label fw-semibold">Nama</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" name="name" class="form-control" placeholder="Masukkan nama" required>
+                                <input type="text" name="name" class="form-control" placeholder="Masukkan nama"
+                                    required>
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4">
                             <label class="form-label fw-semibold">Status</label>
                             <div class="d-flex gap-2">
-                                <span class="badge text-bg-light w-100 text-center py-2" id="cameraStatus">Kamera: belum aktif</span>
+                                <span class="badge text-bg-light w-100 text-center py-2" id="cameraStatus">Kamera: belum
+                                    aktif</span>
                             </div>
                         </div>
                     </div>
@@ -140,7 +150,7 @@
                             </div>
                         </div>
 
-                         {{-- preview --}}
+                        {{-- preview --}}
                         <div class="col-12 col-lg-6">
                             <div class="border rounded-4 p-3 h-100">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
@@ -178,6 +188,14 @@
 @endsection
 
 @push('js')
+    <script>
+        const nowWIB = new Date().toLocaleString('sv-SE', {
+            timeZone: 'Asia/Jakarta'
+        }).replace('T', ' ');
+
+        document.getElementById('waktu_masuk').value = nowWIB;
+    </script>
+
     <script language="JavaScript">
         const $cameraStatus = $('#cameraStatus');
         const $snapStatus = $('#snapStatus');
@@ -187,7 +205,7 @@
             $el.removeClass().addClass('badge text-bg-' + variant).text(text);
         }
 
-        $('#open_camera').on('click', function () {
+        $('#open_camera').on('click', function() {
             $('#my_camera').removeClass('d-none');
             $('#camera_placeholder').addClass('d-none');
 
@@ -205,7 +223,7 @@
             setBadge($cameraStatus, 'Kamera: aktif', 'success');
         });
 
-        $('#stop_camera').on('click', function () {
+        $('#stop_camera').on('click', function() {
             Webcam.reset();
             $('#my_camera').addClass('d-none');
             $('#camera_placeholder').removeClass('d-none');
@@ -216,8 +234,8 @@
             setBadge($cameraStatus, 'Kamera: berhenti', 'secondary');
         });
 
-        $('#take_snap').on('click', function () {
-            Webcam.snap(function (data_uri) {
+        $('#take_snap').on('click', function() {
+            Webcam.snap(function(data_uri) {
                 $('#imageTag').val(data_uri);
 
                 $('#results').html('<img src="' + data_uri + '" alt="Snapshot">');
@@ -229,7 +247,9 @@
         });
 
         window.addEventListener('beforeunload', () => {
-            try { Webcam.reset(); } catch(e) {}
+            try {
+                Webcam.reset();
+            } catch (e) {}
         });
 
         // badge
