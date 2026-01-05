@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Absensi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AbsensiController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['absen', 'store']);
+    }
+
     public function absen()
     {
         return view('pages.absensi');
@@ -63,7 +67,7 @@ class AbsensiController extends Controller
             'photo_name' => $imageName,
             'status' => $status,
             'keterangan' => $keterangan,
-            'waktu_masuk' => now('Asia/Jakarta'),
+            'waktu_masuk' => $request->waktu_masuk,
         ]);
 
         return redirect()->back()->with('success', 'Absensi berhasil disimpan');
