@@ -14,7 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name')->nullable();
             $table->string('photo_name')->nullable();
-            $table->dateTime('waktu_masuk')->nullable();
+            $table->string('status')->nullable();
+            $table->string('keterangan')->nullable();
             $table->timestamps();
         });
     }

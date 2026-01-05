@@ -7,51 +7,84 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AbsensiExport;
+use Illuminate\Support\Facades\File;
 
 class Konsumen extends Component
 {
-    public $searchabsensi, $nama, $f_absensi, $absensi_id;
-    public $updateMode = false;
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
     protected $paginationName = 'Page';
+
+    public $searchNama = '';
+    public $filterStatus = '';
+    public $filterKeterangan = '';
+    public $filterTanggal = '';
+
+    public $exportFromDate;
+    public $exportToDate;
+    public $absensi_id;
+    public $name;
+    public $status;
+    public $keterangan;
+
+    public $updateMode = false;
+
+    protected $rules = [
+        'exportFromDate' => 'required|date',
+        'exportToDate' => 'required|date|after_or_equal:exportFromDate',
+    ];
+
     public function paginationView()
     {
         return 'components.pagination_custom';
     }
 
-    public function resetKonsumenPage()
+    public function resetPageCustom()
     {
         $this->gotoPage(1, 'Page');
     }
 
     public function export()
     {
-        return Excel::download(new AbsensiExport, 'Rekap-Absen.xlsx');
+        $this->validate();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AbsensiExport($this->exportFromDate, $this->exportToDate), 'Rekap-Absen-' . $this->exportFromDate . '-sampai-' . $this->exportToDate . '.xlsx');
     }
 
     public function render()
     {
-        $searchabsensi = '%' . $this->searchabsensi . '%';
+        $query = Absensi::query();
+
+        if ($this->searchNama) {
+            $query->where('name', 'like', '%' . $this->searchNama . '%');
+        }
+
+        if ($this->filterStatus) {
+            $query->where('status', $this->filterStatus);
+        }
+
+        if ($this->filterKeterangan) {
+            $query->where('keterangan', $this->filterKeterangan);
+        }
+
+        if ($this->filterTanggal) {
+            $query->whereDate('waktu_masuk', $this->filterTanggal);
+        }
+
         return view('livewire.admin.konsumen', [
-            'absensis' => Absensi::where('name', 'LIKE', $searchabsensi)
-                ->orderBy('id', 'DESC')
-                ->paginate(5, ['*'], $this->paginationName),
+            'absensis' => $query->orderBy('id', 'desc')->paginate(5, ['*'], $this->paginationName),
         ]);
     }
 
-    public function resetInput()
-    {
-        $this->nama = '';
-        $this->f_absensi = '';
-        $this->absensi_id = '';
-    }
     public function edit($id)
     {
-        $absensi = Absensi::find($id);
-        $this->nama = $absensi->nama;
-        $this->f_absensi = $absensi->f_absensi;
+        $absensi = Absensi::findOrFail($id);
+
         $this->absensi_id = $absensi->id;
+        $this->name = $absensi->name;
+        $this->status = $absensi->status;
+        $this->keterangan = $absensi->keterangan;
 
         $this->updateMode = true;
     }
@@ -60,39 +93,41 @@ class Konsumen extends Component
     {
         $this->validate([
             'name' => 'required',
-            'f_absensi' => 'required',
+            'status' => 'required',
+            'keterangan' => 'required',
         ]);
-        if ($this->absensi_id) {
-            $absensi = Absensi::find($this->absensi_id);
-            $absensi->update([
-                'name' => $this->nama,
-                'f_absensi' => $this->f_absensi,
-            ]);
-        }
-        $this->resetInput();
-        $this->updateMode = false;
-        // $this->alert('success', 'Berhasil Diubah!', [
-        //     'position' => 'center',
-        //     'timer' => 3000,
-        //     'toast' => false,
-        //     'timerProgressBar' => true,
-        // ]);
+
+        Absensi::where('id', $this->absensi_id)->update([
+            'name' => $this->name,
+            'status' => $this->status,
+            'keterangan' => $this->keterangan,
+        ]);
+
+        $this->cancel();
+        session()->flash('message', 'Data berhasil diperbarui');
     }
+
     public function destroy($id)
     {
-        $absensi = Absensi::find($id);
+        $absensi = Absensi::findOrFail($id);
+
+        // PATH FOTO REAL
+        if ($absensi->photo_name) {
+            $photoPath = public_path('storage/absensi/' . $absensi->photo_name);
+
+            if (File::exists($photoPath)) {
+                File::delete($photoPath);
+            }
+        }
+
+        // HAPUS DATA DB
         $absensi->delete();
-        // $this->alert('success', 'Berhasil Dihapus!', [
-        //     'position' => 'center',
-        //     'timer' => 3000,
-        //     'toast' => false,
-        //     'timerProgressBar' => true,
-        // ]);
+
+        session()->flash('message', 'Data & foto absensi berhasil dihapus');
     }
 
     public function cancel()
     {
-        $this->updateMode = false;
-        $this->resetInput();
+        $this->reset(['absensi_id', 'name', 'status', 'keterangan', 'updateMode']);
     }
 }

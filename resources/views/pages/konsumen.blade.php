@@ -1,6 +1,15 @@
 @extends('layouts.main')
 
 @push('css')
+    <style>
+        .preview-img {
+            transition: transform .2s ease;
+        }
+
+        .preview-img:hover {
+            transform: scale(1.05);
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -17,4 +26,9 @@
 @endsection
 
 @push('js')
+    <script>
+        function showPreview(src) {
+            document.getElementById('previewImage').src = src;
+        }
+    </script>
 @endpush

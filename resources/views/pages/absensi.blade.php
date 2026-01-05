@@ -105,6 +105,15 @@
                         </div>
 
                         <div class="col-12 col-md-4">
+                            <label class="form-label fw-semibold">Status Absensi</label>
+                            <select name="status" class="form-select" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="Absen Masuk">Absen Masuk</option>
+                                <option value="Absen Keluar">Absen Keluar</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-4">
                             <label class="form-label fw-semibold">Status</label>
                             <div class="d-flex gap-2">
                                 <span class="badge text-bg-light w-100 text-center py-2" id="cameraStatus">Kamera: belum
