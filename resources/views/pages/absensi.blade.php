@@ -33,7 +33,8 @@
         .preview-box img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            background: #000;
         }
 
         #preview_placeholder {
@@ -91,6 +92,8 @@
                 <form method="POST" action="{{ route('absen.store') }}" id="absenForm">
                     @csrf
                     <input type="text" name="waktu_masuk" id="waktu_masuk" hidden>
+                    <input type="hidden" name="lokasi" id="lokasi">
+
                     <div class="row g-3 align-items-end mb-3">
                         <div class="col-12 col-md-8">
                             <label class="form-label fw-semibold">Nama</label>
@@ -196,6 +199,59 @@
         document.getElementById('waktu_masuk').value = nowWIB;
     </script>
 
+    <script>
+        async function getAlamatJalan() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve('Lokasi tidak tersedia');
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(async position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+                        );
+                        const data = await response.json();
+
+                        let address = data.address;
+                        let jalan = address.road || address.pedestrian || address.neighbourhood ||
+                            '';
+                        let kota = address.city || address.town || address.village || '';
+                        let negara = address.country || '';
+
+                        resolve(`${jalan}, ${kota}`);
+                    } catch (e) {
+                        resolve('Lokasi tidak diketahui');
+                    }
+                }, () => {
+                    resolve('Izin lokasi ditolak');
+                });
+            });
+        }
+    </script>
+
+
+    <script>
+        let userLocationText = 'Lokasi tidak diketahui';
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude.toFixed(6);
+                    const lng = pos.coords.longitude.toFixed(6);
+                    userLocationText = `Lat ${lat}, Lng ${lng}`;
+                },
+                () => {
+                    userLocationText = 'Lokasi ditolak';
+                }
+            );
+        }
+    </script>
+
     <script language="JavaScript">
         const $cameraStatus = $('#cameraStatus');
         const $snapStatus = $('#snapStatus');
@@ -234,17 +290,48 @@
             setBadge($cameraStatus, 'Kamera: berhenti', 'secondary');
         });
 
-        $('#take_snap').on('click', function() {
+        $('#take_snap').on('click', async function() {
+
+            const lokasi = await getAlamatJalan();
+            document.getElementById('lokasi').value = lokasi;
+
             Webcam.snap(function(data_uri) {
-                $('#imageTag').val(data_uri);
 
-                $('#results').html('<img src="' + data_uri + '" alt="Snapshot">');
-                $('#preview_placeholder').addClass('d-none');
+                const img = new Image();
+                img.src = data_uri;
 
-                setBadge($snapStatus, 'Gambar: siap', 'success');
-                $btnSubmit.prop('disabled', false);
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    // ===== WATERMARK =====
+                    const waktu = document.getElementById('waktu_masuk').value;
+
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillRect(0, canvas.height - 90, canvas.width, 90);
+
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '20px Arial';
+                    ctx.fillText(`📍 ${lokasi}`, 20, canvas.height - 50);
+                    ctx.fillText(`🕒 ${waktu} WIB`, 20, canvas.height - 20);
+
+                    const finalImage = canvas.toDataURL('image/jpeg', 0.9);
+
+                    $('#imageTag').val(finalImage);
+                    $('#results').html('<img src="' + finalImage + '">');
+                    $('#preview_placeholder').addClass('d-none');
+
+                    setBadge($snapStatus, 'Gambar: siap', 'success');
+                    $btnSubmit.prop('disabled', false);
+                };
             });
         });
+
+
 
         window.addEventListener('beforeunload', () => {
             try {
