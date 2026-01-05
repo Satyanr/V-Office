@@ -5,6 +5,8 @@ namespace App\Livewire\Admin;
 use App\Models\Absensi;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AbsensiExport;
 
 class Konsumen extends Component
 {
@@ -22,6 +24,12 @@ class Konsumen extends Component
     {
         $this->gotoPage(1, 'Page');
     }
+
+    public function export()
+    {
+        return Excel::download(new AbsensiExport, 'Rekap-Absen.xlsx');
+    }
+
     public function render()
     {
         $searchabsensi = '%' . $this->searchabsensi . '%';

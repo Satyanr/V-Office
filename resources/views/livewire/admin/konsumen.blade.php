@@ -10,6 +10,10 @@
                             aria-describedby="basic-addon1" wire:model='searchabsensi' wire:input='resetKonsumenPage'>
                     </div>
                 </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-success d-flex m-auto mt-4"
+                        wire:click.prevent='export'>Export Rekap</button>
+                </div>
             </div>
 
             @if ($updateMode)
