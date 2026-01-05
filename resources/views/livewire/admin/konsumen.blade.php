@@ -71,7 +71,7 @@
                             <div class="col-md-4">
                                 <input type="text" class="form-control" wire:model="name">
                             </div>
-                            <div class="col-m d-4">
+                            <div class="col-md-4">
                                 <select class="form-select" wire:model="status">
                                     <option value="Absen Masuk">Absen Masuk</option>
                                     <option value="Absen Keluar">Absen Keluar</option>
