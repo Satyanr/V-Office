@@ -64,7 +64,7 @@
                     @endif
 
                     <div class="col d-flex me-2" style="margin-left: auto;">
-                        <a href="{{ route('konsumen') }}" class="btn btn-outline-light border-0">
+                        <a href="{{ route('rekap-absensi') }}" class="btn btn-outline-light border-0">
                             <div class="row">
                                 <div class="col">
                                     <i class="fa-solid fa-users-between-lines"></i>
@@ -72,7 +72,7 @@
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    Konsumen
+                                    Absensi
                                 </div>
                             </div>
                         </a>

@@ -22,7 +22,7 @@ use App\Models\Absensi;
 */
 
 Route::get('/', function () {
-    return view('pages.home');
+    return view('pages.absensi');
 });
 Route::get('/info-laundryan/{kode_laundry}',  [InfoController::class, 'infoLaundryan']);
 
@@ -72,5 +72,5 @@ Route::controller(Controller::class)->group(function () {
         Route::get('/pengguna', 'pengguna')->name('pengguna');
         Route::get('/layanan', 'layanan')->name('layanan');
     });
-    Route::get('/konsumen', 'konsumen')->name('konsumen');
+    Route::get('/rekap-absensi', 'rekapabsensi')->name('rekap-absensi');
 });

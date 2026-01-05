@@ -6,26 +6,29 @@
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1"><i
                                 class="fa-solid fa-magnifying-glass"></i></span>
-                        <input type="text" class="form-control" placeholder="Cari Konsumen" aria-label="Cari konsumen"
-                            aria-describedby="basic-addon1" wire:model='searchkonsumen' wire:input='resetKonsumenPage'>
+                        <input type="text" class="form-control" placeholder="Cari Absen" aria-label="Cari Absen"
+                            aria-describedby="basic-addon1" wire:model='searchabsensi' wire:input='resetKonsumenPage'>
                     </div>
                 </div>
             </div>
 
-            @if($updateMode)
-            <div class="row">
-                <div class="col">
-                    <form>
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Nama" aria-label="Nama"
-                                aria-describedby="basic-addon2" wire:model='nama'>
-                            <input type="number" class="form-control" placeholder="Nomor Telp" wire:model='no_telp'>
-                            <button class="btn btn-primary" type="button" wire:click.prevent='update'>Update</button>
-                            <button class="btn btn-secondary" type="button" wire:click.prevent='cancel'>Batal</button>
-                        </div>
-                    </form>
+            @if ($updateMode)
+                <div class="row">
+                    <div class="col">
+                        <form>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="Nama" aria-label="Nama"
+                                    aria-describedby="basic-addon2" wire:model='nama'>
+                                <input type="number" class="form-control" placeholder="Nomor Telp"
+                                    wire:model='no_telp'>
+                                <button class="btn btn-primary" type="button"
+                                    wire:click.prevent='update'>Update</button>
+                                <button class="btn btn-secondary" type="button"
+                                    wire:click.prevent='cancel'>Batal</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
             @endif
 
             <div class="row mb-3">
@@ -44,29 +47,41 @@
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>Nama Konsumen</th>
-                                <th>Nomor Phone</th>
+                                <th>Preview</th>
+                                <th>Nama</th>
+                                <th>Tanggal</th>
+                                <th>Jam Masuk</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($konsumens as $konsumen)
+                            @forelse ($absensis as $absensi)
                                 <tr>
-                                    <td>{{ $konsumen->nama }}</td>
-                                    <td>{{ $konsumen->no_telp }}</td>
+                                    <td>
+                                        @if ($absensi->photo_name && file_exists(public_path('storage/absensi/' . $absensi->photo_name)))
+                                            <img src="{{ asset('storage/absensi/' . $absensi->photo_name) }}"
+                                                width="80" class="img-thumbnail">
+                                        @else
+                                            <span class="text-muted">No Photo</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $absensi->name }}</td>
+                                    <td>{{ $absensi->created_at->format('d M Y') }}</td>
+                                    <td>{{ $absensi->created_at->format('H:i') }}</td>
+
                                     <td>
                                         <a href="javascript:void(0)" class="text-warning"
-                                            wire:click.prevent='edit({{ $konsumen->id }})'><i
+                                            wire:click.prevent='edit({{ $absensi->id }})'><i
                                                 class="fa fa-pencil"></i></a>
 
                                         <a href="javascript:void(0)" class="text-danger"
-                                            wire:click.prevent='destroy({{ $konsumen->id }})'><i
+                                            wire:click.prevent='destroy({{ $absensi->id }})'><i
                                                 class="fa fa-trash"></i></a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3">Tidak ada konsumen</td>
+                                    <td colspan="5">Tidak Ada Rekap Terdata</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -75,7 +90,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    {{ $konsumens->links() }}
+                    {{ $absensis->links() }}
                 </div>
             </div>
         </div>

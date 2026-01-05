@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Absensi;
 use Livewire\Component;
-use App\Models\KonsumenTbl;
 use Livewire\WithPagination;
 
 class Konsumen extends Component
 {
-    public $searchkonsumen, $nama, $no_telp, $konsumen_id;
+    public $searchabsensi, $nama, $f_absensi, $absensi_id;
     public $updateMode = false;
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
@@ -24,9 +24,9 @@ class Konsumen extends Component
     }
     public function render()
     {
-        $searchkosumen = '%' . $this->searchkonsumen . '%';
+        $searchabsensi = '%' . $this->searchabsensi . '%';
         return view('livewire.admin.konsumen', [
-            'konsumens' => KonsumenTbl::where('nama', 'LIKE', $searchkosumen)
+            'absensis' => Absensi::where('name', 'LIKE', $searchabsensi)
                 ->orderBy('id', 'DESC')
                 ->paginate(5, ['*'], $this->paginationName),
         ]);
@@ -35,15 +35,15 @@ class Konsumen extends Component
     public function resetInput()
     {
         $this->nama = '';
-        $this->no_telp = '';
-        $this->konsumen_id = '';
+        $this->f_absensi = '';
+        $this->absensi_id = '';
     }
     public function edit($id)
     {
-        $konsumen = KonsumenTbl::find($id);
-        $this->nama = $konsumen->nama;
-        $this->no_telp = $konsumen->no_telp;
-        $this->konsumen_id = $konsumen->id;
+        $absensi = Absensi::find($id);
+        $this->nama = $absensi->nama;
+        $this->f_absensi = $absensi->f_absensi;
+        $this->absensi_id = $absensi->id;
 
         $this->updateMode = true;
     }
@@ -51,35 +51,35 @@ class Konsumen extends Component
     public function update()
     {
         $this->validate([
-            'nama' => 'required',
-            'no_telp' => 'required',
+            'name' => 'required',
+            'f_absensi' => 'required',
         ]);
-        if ($this->konsumen_id) {
-            $konsumen = KonsumenTbl::find($this->konsumen_id);
-            $konsumen->update([
-                'nama' => $this->nama,
-                'no_telp' => $this->no_telp,
+        if ($this->absensi_id) {
+            $absensi = Absensi::find($this->absensi_id);
+            $absensi->update([
+                'name' => $this->nama,
+                'f_absensi' => $this->f_absensi,
             ]);
         }
         $this->resetInput();
         $this->updateMode = false;
-        $this->alert('success', 'Berhasil Diubah!', [
-            'position' => 'center',
-            'timer' => 3000,
-            'toast' => false,
-            'timerProgressBar' => true,
-        ]);
+        // $this->alert('success', 'Berhasil Diubah!', [
+        //     'position' => 'center',
+        //     'timer' => 3000,
+        //     'toast' => false,
+        //     'timerProgressBar' => true,
+        // ]);
     }
     public function destroy($id)
     {
-        $konsumen = KonsumenTbl::find($id);
-        $konsumen->delete();
-        $this->alert('success', 'Berhasil Dihapus!', [
-            'position' => 'center',
-            'timer' => 3000,
-            'toast' => false,
-            'timerProgressBar' => true,
-        ]);
+        $absensi = Absensi::find($id);
+        $absensi->delete();
+        // $this->alert('success', 'Berhasil Dihapus!', [
+        //     'position' => 'center',
+        //     'timer' => 3000,
+        //     'toast' => false,
+        //     'timerProgressBar' => true,
+        // ]);
     }
 
     public function cancel()

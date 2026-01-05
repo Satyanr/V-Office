@@ -31,7 +31,7 @@ class Controller extends BaseController
         return view('pages.layanan');
     }
 
-    public function konsumen()
+    public function rekapabsensi()
     {
         return view('pages.konsumen');
     }

@@ -8,7 +8,7 @@
         <div class="shadow p-3 mb-5 bg-body-tertiary rounded-4">
             <div class="row text-center mb-5">
                 <div class="col text-center">
-                    <h4>Daftar Konsumen</h4>
+                    <h4>Rekap Absensi</h4>
                 </div>
             </div>
             @livewire('admin.konsumen')
