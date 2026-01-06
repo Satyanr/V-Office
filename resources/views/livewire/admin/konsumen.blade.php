@@ -2,37 +2,6 @@
     <div class="row text-center justify-content-between">
         <div class="col">
             <div class="row mb-3 align-items-end">
-                <div class="col-lg-8">
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" placeholder="Cari Nama" wire:model="searchNama"
-                                wire:input="resetPageCustom">
-                        </div>
-
-                        <div class="col-md-3">
-                            <select class="form-select" wire:model="filterStatus" wire:change="resetPageCustom">
-                                <option value="">Semua Status</option>
-                                <option value="Absen Masuk">Absen Masuk</option>
-                                <option value="Absen Keluar">Absen Keluar</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3">
-                            <select class="form-select" wire:model="filterKeterangan" wire:change="resetPageCustom">
-                                <option value="">Semua Keterangan</option>
-                                <option value="Tepat Waktu">Tepat Waktu</option>
-                                <option value="Terlambat">Terlambat</option>
-                                <option value="Lembur">Lembur</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-2">
-                            <input type="date" class="form-control" wire:model="filterTanggal"
-                                wire:change="resetPageCustom">
-                        </div>
-                    </div>
-                </div>
-
                 <div class="col-lg-4">
                     <div class="border rounded p-2 bg-light">
                         <div class="row g-2">
@@ -49,18 +18,47 @@
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
-
-
-                            <div class="col-12">
+                            <div class="col-12 d-flex align-items-center justify-content-between gap-2">
                                 <button class="btn btn-success w-100" wire:click="export">
-                                    <i class="fa-solid fa-file-excel me-1"></i>
-                                    Export Excel
+                                    <i class="fa-solid fa-file-excel me-1"></i> Export
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="row mb-3 align-items-end">
+                <div class="col-lg-12">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Cari Nama"
+                                wire:model.debounce.500ms="searchNama">
+                        </div>
+
+                        <div class="col-md-3">
+                            <select class="form-select" wire:model="filterStatus">
+                                <option value="">Semua Status</option>
+                                <option value="Absen Masuk">Absen Masuk</option>
+                                <option value="Absen Keluar">Absen Keluar</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <select class="form-select" wire:model="filterKeterangan">
+                                <option value="">Semua Keterangan</option>
+                                <option value="Tepat Waktu">Tepat Waktu</option>
+                                <option value="Terlambat">Terlambat</option>
+                                <option value="Lembur">Lembur</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <input type="date" class="form-control" wire:model="filterTanggal">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
 
 

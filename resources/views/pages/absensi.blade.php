@@ -47,6 +47,17 @@
             padding: 1rem;
         }
 
+        .preview-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+
         #results {
             position: absolute;
             inset: 0;
@@ -171,12 +182,19 @@
                                     </div>
                                 </div>
 
-                                <div class="preview-box">
+                                <div class="preview-box" id="previewSection">
                                     <div id="results" class="w-100 h-100"></div>
                                     <div id="preview_placeholder" class="text-muted text-center px-3">
                                         Gambar akan muncul di sini.
                                     </div>
+
+                                    <div id="preview_loading" class="preview-loading d-none">
+                                        <div class="spinner-border text-light" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
                                 </div>
+
 
                                 <div class="d-grid mt-3">
                                     <button class="btn btn-success btn-lg" id="btnSubmit" disabled>
@@ -277,11 +295,16 @@
             $('#take_snap').removeClass('d-none');
             $('#stop_camera').removeClass('d-none');
 
+            const isMobile = window.innerWidth < 768;
+
             Webcam.set({
-                width: 640,
-                height: 480,
+                width: isMobile ? 360 : 640,
+                height: isMobile ? 480 : 480,
                 image_format: 'jpeg',
-                jpeg_quality: 90,
+                jpeg_quality: 85,
+                constraints: {
+                    facingMode: "user"
+                }
             });
 
             Webcam.attach('#my_camera');
@@ -299,12 +322,23 @@
             setBadge($cameraStatus, 'Kamera: berhenti', 'secondary');
         });
 
-        $('#take_snap').on('click', async function() {
+        $('#take_snap').on('click', function() {
+            if (window.innerWidth < 768) {
+                setTimeout(() => {
+                    document.getElementById('previewSection')
+                        .scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                }, 150);
+            }
 
-            const lokasi = await getAlamatJalan();
-            document.getElementById('lokasi').value = lokasi;
+            $('#preview_loading').removeClass('d-none');
 
-            Webcam.snap(function(data_uri) {
+            Webcam.snap(async function(data_uri) {
+
+                const lokasi = await getAlamatJalan();
+                document.getElementById('lokasi').value = lokasi;
 
                 const img = new Image();
                 img.src = data_uri;
@@ -317,18 +351,28 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
 
-                    // ===== WATERMARK =====
                     const waktu = document.getElementById('waktu_masuk').value;
 
-                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                    ctx.fillRect(0, canvas.height - 90, canvas.width, 90);
+                    const padding = 16;
+                    const lineHeight = 26;
+                    const isPortrait = canvas.height > canvas.width;
+                    const fontSize = isPortrait ? 16 : 20;
+
+                    ctx.font = `${fontSize}px Arial`;
+
+                    const watermarkHeight = lineHeight * 2 + padding * 2;
+                    const startY = canvas.height - watermarkHeight;
+
+                    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+                    ctx.fillRect(0, startY, canvas.width, watermarkHeight);
 
                     ctx.fillStyle = '#fff';
-                    ctx.font = '20px Arial';
-                    ctx.fillText(`📍 ${lokasi}`, 20, canvas.height - 50);
-                    ctx.fillText(`🕒 ${waktu} WIB`, 20, canvas.height - 20);
+                    ctx.textBaseline = 'top';
 
-                    const finalImage = canvas.toDataURL('image/jpeg', 0.9);
+                    ctx.fillText(`📍 ${lokasi}`, padding, startY + padding);
+                    ctx.fillText(`🕒 ${waktu} WIB`, padding, startY + padding + lineHeight);
+
+                    const finalImage = canvas.toDataURL('image/jpeg', 0.85);
 
                     $('#imageTag').val(finalImage);
                     $('#results').html('<img src="' + finalImage + '">');
@@ -336,10 +380,12 @@
 
                     setBadge($snapStatus, 'Gambar: siap', 'success');
                     $btnSubmit.prop('disabled', false);
+
+
+                    $('#preview_loading').addClass('d-none');
                 };
             });
         });
-
 
 
         window.addEventListener('beforeunload', () => {
