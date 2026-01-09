@@ -206,6 +206,9 @@
                                     ⏰ Absensi hanya dapat dilakukan mulai pukul <b>07:30 WIB</b>.
                                 </div>
 
+                                <div class="form-text mt-1 fw-semibold" id="countdown0730"></div>
+
+
                                 <div class="form-text mt-2">
                                     Tombol submit akan aktif setelah gambar diambil.
                                 </div>
@@ -436,5 +439,48 @@
 
         updateSubmitTimeRule();
         setInterval(updateSubmitTimeRule, 30000); // update tiap 30 detik
+    </script>
+
+    <script>
+        function getWIBDate() {
+            return new Date(new Date().toLocaleString('en-US', {
+                timeZone: 'Asia/Jakarta'
+            }));
+        }
+
+        function updateCountdown0730() {
+            const now = getWIBDate();
+
+            const target = new Date(now);
+            target.setHours(7, 30, 0, 0);
+
+            const countdownEl = $('#countdown0730');
+
+            // jika sudah lewat 07:30
+            if (now >= target) {
+                countdownEl.html('');
+                $('#submitInfo')
+                    .removeClass('text-danger')
+                    .addClass('text-success')
+                    .html('✅ Waktu absensi sudah dibuka.');
+                return;
+            }
+
+            const diff = target - now;
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            countdownEl
+                .removeClass('text-success')
+                .addClass('text-danger')
+                .html(
+                    `⏳ Dibuka dalam <b>${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}</b>`
+                    );
+        }
+
+        updateCountdown0730();
+        setInterval(updateCountdown0730, 1000);
     </script>
 @endpush
