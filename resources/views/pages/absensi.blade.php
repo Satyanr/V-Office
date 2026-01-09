@@ -202,6 +202,10 @@
                                     </button>
                                 </div>
 
+                                <div class="form-text mt-2" id="submitInfo">
+                                    ⏰ Absensi hanya dapat dilakukan mulai pukul <b>07:30 WIB</b>.
+                                </div>
+
                                 <div class="form-text mt-2">
                                     Tombol submit akan aktif setelah gambar diambil.
                                 </div>
@@ -379,7 +383,10 @@
                     $('#preview_placeholder').addClass('d-none');
 
                     setBadge($snapStatus, 'Gambar: siap', 'success');
-                    $btnSubmit.prop('disabled', false);
+                    if (isAfter0730WIB()) {
+                        $btnSubmit.prop('disabled', false);
+                    }
+
 
 
                     $('#preview_loading').addClass('d-none');
@@ -397,5 +404,37 @@
         // badge
         setBadge($cameraStatus, 'Kamera: belum aktif', 'light');
         setBadge($snapStatus, 'Gambar: belum ada', 'light');
+    </script>
+
+    <script>
+        function isAfter0730WIB() {
+            const now = new Date().toLocaleString('en-US', {
+                timeZone: 'Asia/Jakarta'
+            });
+            const date = new Date(now);
+
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+
+            return (hours > 7 || (hours === 7 && minutes >= 30));
+        }
+
+        function updateSubmitTimeRule() {
+            if (!isAfter0730WIB()) {
+                $('#btnSubmit').prop('disabled', true);
+                $('#submitInfo')
+                    .removeClass('text-muted')
+                    .addClass('text-danger')
+                    .html('⛔ Absensi hanya dapat dilakukan mulai pukul <b>07:30 WIB</b>.');
+            } else {
+                $('#submitInfo')
+                    .removeClass('text-danger')
+                    .addClass('text-muted')
+                    .html('✅ Waktu absensi sudah dibuka.');
+            }
+        }
+
+        updateSubmitTimeRule();
+        setInterval(updateSubmitTimeRule, 30000); // update tiap 30 detik
     </script>
 @endpush
