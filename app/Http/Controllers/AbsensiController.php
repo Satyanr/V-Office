@@ -37,6 +37,21 @@ class AbsensiController extends Controller
         ]);
 
         // ========================
+        // CEK DUPLIKAT ABSENSI
+        // ========================
+        $tanggalAbsen = Carbon::parse($request->waktu_masuk, 'Asia/Jakarta')->toDateString();
+
+        $sudahAbsen = Absensi::where('name', $request->name)->where('status', $request->status)->whereDate('waktu_masuk', $tanggalAbsen)->exists();
+
+        if ($sudahAbsen) {
+            return redirect()
+                ->back()
+                ->withErrors([
+                    'absen' => "❌ {$request->name} sudah melakukan {$request->status} pada tanggal {$tanggalAbsen}",
+                ]);
+        }
+
+        // ========================
         // SIMPAN FOTO
         // ========================
         $image = $request->image;
