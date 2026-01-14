@@ -44,9 +44,9 @@
                      @if ($listmode) active @endif
                     "
                         href="javascript:void(0)" wire:click='liston' wire:click.prevent='cancel'>
-                        <h4>Daftar Orderan @if ($orders->where('status', 'baru')->count() > 0)
+                        <h4>Daftar Orderan @if ($projects->where('status', 'baru')->count() > 0)
                                 <span
-                                    class="badge rounded-circle text-bg-danger">{{ $orders->where('status', 'baru')->count() }}</span>
+                                    class="badge rounded-circle text-bg-danger">{{ $projects->where('status', 'baru')->count() }}</span>
                             @endif
                         </h4>
                     </a>

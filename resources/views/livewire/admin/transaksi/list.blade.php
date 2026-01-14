@@ -1,4 +1,4 @@
-<div class="row justify-content-center">
+{{-- <div class="row justify-content-center">
     <div class="col-auto">
         <div class="card">
             <div class="card-body text-center text-white text-bg-warning">
@@ -587,4 +587,4 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}

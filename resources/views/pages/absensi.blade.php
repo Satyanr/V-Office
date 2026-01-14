@@ -203,10 +203,10 @@
                                 </div>
 
                                 <div class="form-text mt-2" id="submitInfo">
-                                    ⏰ Absensi hanya dapat dilakukan mulai pukul <b>07:30 WIB</b>.
+                                    ⏰ Absensi hanya dapat dilakukan mulai pukul <b>07:00 WIB</b>.
                                 </div>
 
-                                <div class="form-text mt-1 fw-semibold" id="countdown0730"></div>
+                                <div class="form-text mt-1 fw-semibold" id="countdown0700"></div>
 
 
                                 <div class="form-text mt-2">
@@ -419,7 +419,7 @@
             const hours = date.getHours();
             const minutes = date.getMinutes();
 
-            return (hours > 7 || (hours === 7 && minutes >= 30));
+            return (hours > 7 || (hours === 7 && minutes >= 00));
         }
 
         function updateSubmitTimeRule() {
@@ -428,7 +428,7 @@
                 $('#submitInfo')
                     .removeClass('text-muted')
                     .addClass('text-danger')
-                    .html('⛔ Absensi hanya dapat dilakukan mulai pukul <b>07:30 WIB</b>.');
+                    .html('⛔ Absensi hanya dapat dilakukan mulai pukul <b>07:00 WIB</b>.');
             } else {
                 $('#submitInfo')
                     .removeClass('text-danger')
@@ -448,15 +448,15 @@
             }));
         }
 
-        function updateCountdown0730() {
+        function updateCountdown0700() {
             const now = getWIBDate();
 
             const target = new Date(now);
-            target.setHours(7, 30, 0, 0);
+            target.setHours(7, 0, 0, 0);
 
-            const countdownEl = $('#countdown0730');
+            const countdownEl = $('#countdown0700');
 
-            // jika sudah lewat 07:30
+            // jika sudah lewat 07:00
             if (now >= target) {
                 countdownEl.html('');
                 $('#submitInfo')
@@ -480,7 +480,7 @@
                     );
         }
 
-        updateCountdown0730();
-        setInterval(updateCountdown0730, 1000);
+        updateCountdown0700();
+        setInterval(updateCountdown0700, 1000);
     </script>
 @endpush

@@ -23,10 +23,10 @@ class AbsensiController extends Controller
     {
         $now = Carbon::now('Asia/Jakarta');
 
-        if ($now->format('H:i') < '07:30') {
+        if ($now->format('H:i') < '07:00') {
             return redirect()
                 ->back()
-                ->withErrors(['absen' => 'Absensi hanya dapat dilakukan mulai pukul 07:30 WIB']);
+                ->withErrors(['absen' => 'Absensi hanya dapat dilakukan mulai pukul 07:00 WIB']);
         }
 
         $request->validate([

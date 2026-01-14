@@ -33,11 +33,21 @@ class Controller extends BaseController
 
     public function rekapabsensi()
     {
-        return view('pages.konsumen');
+        return view('pages.rekapabsensi');
     }
 
     public function dashboard()
     {
         return view('dashboard');
+    }
+
+    public function project()
+    {
+        return view('pages.project');
+    }
+
+    public function konsumen()
+    {
+        return view('pages.konsumen');
     }
 }

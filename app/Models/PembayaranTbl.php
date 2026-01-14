@@ -14,4 +14,10 @@ class PembayaranTbl extends Model
         return $this->belongsTo(OrderTbl::class, 'id_order');
     }
 
+    public function project()
+    {
+        return $this->belongsTo(ProjectTbl::class, 'id_project');
+    }
+
+
 }
