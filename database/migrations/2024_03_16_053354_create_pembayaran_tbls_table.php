@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('pembayaran_tbls', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_orders')->constrained('order_tbls')->onDelete('cascade');
+            $table->foreignId('id_project')->constrained('project_tbls')->onDelete('cascade');
             $table->enum('status_pembayaran', ['lunas', 'belum lunas'])->default('belum lunas');
             $table->string('metode_pembayaran')->nullable();
             $table->string('uang_bayar')->nullable();
-            $table->string('kembalian')->nullable();
+            $table->string('sisa_pembayaran')->nullable();
             $table->timestamps();
         });
     }

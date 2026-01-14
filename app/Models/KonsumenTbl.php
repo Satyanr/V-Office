@@ -15,4 +15,9 @@ class KonsumenTbl extends Model
         return $this->hasMany(OrderTbl::class, 'id_konsumen');
     }
 
+    public function project()
+    {
+        return $this->hasMany(ProjectTbl::class, 'id_konsumens');
+    }
+
 }

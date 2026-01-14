@@ -14,4 +14,9 @@ class LayananTbl extends Model
         return $this->hasMany(OrderTbl::class, 'id_layanan');
     }
 
+    public function project()
+    {
+        return $this->hasMany(ProjectTbl::class, 'id_layanans');
+    }
+
 }

@@ -18,7 +18,7 @@
                                         <a class="" href="javascript:void(0)">
                                             <li class="list-group-item" wire:click="pilihkonsumen({{ $name->id }})">
                                                 {{ $name->nama }},
-                                                {{ $name->no_telp }}
+                                                {{ $name->email }}
                                             </li>
                                         </a>
                                     @endforeach
@@ -34,9 +34,9 @@
                 </div>
                 <div class="col">
                     <div class="form-input">
-                        <input type="text" class="form-control @error('no_telp') is-invalid @enderror"
-                            wire:model="no_telp" placeholder="Nomor Hp" required>
-                        @error('no_telp')
+                        <input type="text" class="form-control @error('email') is-invalid @enderror"
+                            wire:model="email" placeholder="Email" required>
+                        @error('email')
                             <div class="invalid-feedback">
                                 {{ $message }}
                             </div>
@@ -45,61 +45,27 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-6">
-                    <div class="mb-3">
-                        <label class="form-label"><strong> Jumlah </strong></label>
-                        <input type="number" min="01" max="50" data-decimals="2" class="form-control @error('jumlah') is-invalid @enderror"
-                            wire:model="jumlah" wire:input='calculateTotalHarga()' required>
-                        @error('jumlah')
-                            <div class="invalid-feedback">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
+                <div class="col">
+                    <label class="form-label"><strong>Total Harga</strong></label>
+                    <input type="number" class="form-control @error('total_harga') is-invalid @enderror"
+                        wire:model="total_harga" placeholder="Masukkan total harga">
+
+                    @error('total_harga')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col">
-                    <div class="mb-3">
-                        <label class="form-label"><strong> Pilih Jenis Layanan </strong></label>
-                        <select class="form-select @error('id_layanan') is-invalid @enderror" wire:model="id_layanan"
-                            wire:change='calculateTotalHarga()' required>
-                            <option value="">Pilih Jenis Layanan</option>
-                            @forelse ($layanans as $layanan)
-                                <option value="{{ $layanan->id }}">{{ $layanan->nama_layanan }}</option>
-                            @empty
-                                <option value="">Belum ada layanan</option>
-                            @endforelse
-
-                        </select>
-                        @error('id_layanan')
-                            <div class="invalid-feedback">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
+                    <label class="form-label"><strong>Tanggal Pengingat</strong></label>
+                    <input type="date" class="form-control" wire:model="tanggal_pengingat">
                 </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Keterangan</strong></label>
+                    <textarea class="form-control" wire:model="keterangan"></textarea>
+                </div>
+
             </div>
 
             <div class="row">
-                <div class="col-auto">
-                    <div class="row">
-                        <div class="col">
-                            Total Harga :
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <h3 class="text-primary">Rp. {{ number_format($this->total, 0, ',', '.') }}</h3>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="text-white bg-warning w-100 border-0 rounded-pill text-center mt-2" wire:loading
-                                wire:target='calculateTotalHarga'>
-                                Loading...
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div class="col-auto text-center mt-2" style="margin-left: auto">
                     @if ($updatemode)
                         <div class="row">
@@ -123,4 +89,3 @@
         </form>
     </div>
 </div>
-

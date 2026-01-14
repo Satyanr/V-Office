@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\OrderTbl;
+use App\Models\ProjectTbl;
 use Illuminate\Http\Request;
-use Picqer\Barcode\BarcodeGeneratorHTML;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PdfController extends Controller
@@ -18,70 +17,60 @@ class PdfController extends Controller
     public function orderan(Request $request)
     {
         $sttsbyr = $request->input('sttsbyr');
-        $status = $request->input('status');
-        $start = Carbon::createFromFormat('Y-m-d', $request->input('start'));
-        $end = Carbon::createFromFormat('Y-m-d', $request->input('end'));
-        if ($sttsbyr != null && $status != null) {
-            if ($start == $end) {
-                $orderan = OrderTbl::whereDate('order_tbls.created_at', $start)->where('status', $status)->join('pembayaran_tbls', 'pembayaran_tbls.id_orders', '=', 'order_tbls.id')->where('pembayaran_tbls.status_pembayaran', $sttsbyr)->get();
-            } else {
-                $orderan = OrderTbl::whereBetween('order_tbls.created_at', [$start, $end])
-                    ->where('status', $status)
-                    ->join('pembayaran_tbls', 'pembayaran_tbls.id_orders', '=', 'order_tbls.id')
-                    ->where('pembayaran_tbls.status_pembayaran', $sttsbyr)
-                    ->get();
-            }
-        } elseif ($status != null) {
-            if ($start == $end) {
-                $orderan = OrderTbl::whereDate('created_at', $start)->where('status', $status)->get();
-            } else {
-                $orderan = OrderTbl::whereBetween('created_at', [$start, $end])
-                    ->where('status', $status)
-                    ->get();
-            }
-        } elseif ($sttsbyr != null) {
-            if ($start == $end) {
-                $orderan = OrderTbl::whereDate('order_tbls.created_at', $start)->join('pembayaran_tbls', 'pembayaran_tbls.id_orders', '=', 'order_tbls.id')->where('pembayaran_tbls.status_pembayaran', $sttsbyr)->get();
-            } else {
-                $orderan = OrderTbl::whereBetween('order_tbls.created_at', [$start, $end])
-                    ->join('pembayaran_tbls', 'pembayaran_tbls.id_orders', '=', 'order_tbls.id')
-                    ->where('pembayaran_tbls.status_pembayaran', $sttsbyr)
-                    ->get();
-            }
+        $status  = $request->input('status');
+        $start   = Carbon::createFromFormat('Y-m-d', $request->input('start'));
+        $end     = Carbon::createFromFormat('Y-m-d', $request->input('end'));
+
+        $query = ProjectTbl::with('pembayaran');
+
+        // filter tanggal
+        if ($start->equalTo($end)) {
+            $query->whereDate('created_at', $start);
         } else {
-            if ($start == $end) {
-                $orderan = OrderTbl::whereDate('created_at', $start)->get();
-            } else {
-                $orderan = OrderTbl::whereBetween('created_at', [$start, $end])->get();
-            }
+            $query->whereBetween('created_at', [$start, $end]);
         }
+
+        // filter status project
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // filter status pembayaran
+        if ($sttsbyr) {
+            $query->whereHas('pembayaran', function ($q) use ($sttsbyr) {
+                $q->where('status_pembayaran', $sttsbyr);
+            });
+        }
+
+        $projects = $query->get();
+
         $data = [
-            'orders' => $orderan,
+            'projects' => $projects,
         ];
 
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('pdf.laporan-pdf', $data)->setPaper('a4', 'landscape');
+        $pdf->loadView('pdf.laporan-pdf', $data)
+            ->setPaper('a4', 'landscape');
 
         return $pdf->stream();
     }
 
     public function barcode($id)
     {
-        $code_laundry = OrderTbl::where('id', $id)->first()->kode_laundry;
-        $order = OrderTbl::where('id', $id)->first();
-        // $generatorHTML = new BarcodeGeneratorHTML();
-        // $barcode = $generatorHTML->getBarcode('stytzy'.$id , $generatorHTML::TYPE_CODE_128);
-        $barcode = QrCode::size(500)->generate('Demo');
+        $project = ProjectTbl::findOrFail($id);
+
+        $barcode = QrCode::size(500)->generate($project->kode_project);
 
         $data = [
-            'code' => $code_laundry,
+            'code'    => $project->kode_project,
             'barcode' => $barcode,
-            'order' => $order,
+            'project' => $project,
         ];
 
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('pdf.barcode', $data)->setPaper([0, 0, 500, 279], 'landscape');
+        $pdf->loadView('pdf.barcode', $data)
+            ->setPaper([0, 0, 500, 279], 'landscape');
 
-        return $pdf->stream('barcode' . $code_laundry . '.pdf');
+        return $pdf->stream('barcode-' . $project->kode_project . '.pdf');
     }
 }

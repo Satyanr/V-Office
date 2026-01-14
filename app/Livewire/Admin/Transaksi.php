@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-use App\Models\OrderTbl;
+use App\Models\ProjectTbl;
 use App\Models\LayananTbl;
 use App\Models\KonsumenTbl;
 use Livewire\WithPagination;
@@ -14,12 +14,13 @@ use Jantinnerezo\LivewireAlert\LivewireAlert;
 
 class Transaksi extends Component
 {
-    public $id_konsumen, $id_layanan, $nama, $no_telp, $jumlah, $total, $searchorder, $orderan_id, $status, $uang_bayar, $kembalian, $layanan, $laundrycode, $sttsbyr, $mtdbyr, $filterorder, $filterbyr;
+    public $id_konsumen, $id_layanan, $nama, $email, $jumlah, $total_harga, $searchproject, $project_id, $status, $uang_bayar, $sisa_pembayaran, $layanan, $laundrycode, $sttsbyr, $mtdbyr, $filterorder, $filterbyr, $tanggal_pengingat, $keterangan, $kembalian, $total;
     public $updatemode = false,
         $listmode = false,
         $detailon = false;
 
-    public $konsumenlist, $searchkonsumen,
+    public $konsumenlist,
+        $searchkonsumen,
         $konsumen_id,
         $showresult = false;
 
@@ -45,26 +46,20 @@ class Transaksi extends Component
     }
     public function render()
     {
-        $searchorder = '%' . $this->searchorder . '%';
+        $searchproject = '%' . $this->searchproject . '%';
         $filterorder = '%' . $this->filterorder . '%';
 
         return view('livewire.admin.transaksi', [
-            'orders' => OrderTbl::where('kode_laundry', 'LIKE', $searchorder)
+            'projects' => ProjectTbl::where('kode_project', 'LIKE', $searchproject)
                 ->where('status', 'LIKE', $filterorder)
                 ->whereHas('konsumen', function ($query) {
-                    $searchkonsumen = '%' . $this->searchkonsumen . '%';
-                    $query->where('nama', 'LIKE', $searchkonsumen);
+                    $query->where('nama', 'LIKE', '%' . $this->searchkonsumen . '%');
                 })
                 ->whereHas('pembayaran', function ($query) {
-                    $filterbyr = '%' . $this->filterbyr . '%';
-                    $query->where('status_pembayaran', 'LIKE', $filterbyr);
+                    $query->where('status_pembayaran', 'LIKE', '%' . $this->filterbyr . '%');
                 })
                 ->orderBy('id', 'DESC')
                 ->paginate(5, ['*'], $this->paginationName),
-            'layanans' => LayananTbl::all(),
-            'mtdbyrs' => MetodePembayaranTbl::all(),
-            'statusBelumDiambilCount' => OrderTbl::where('status', 'selesai')->count(),
-            'statusProsesCount' => OrderTbl::where('status', 'proses')->count(),
         ]);
     }
     public function liston()
@@ -80,81 +75,55 @@ class Transaksi extends Component
         $this->id_konsumen = '';
         $this->id_layanan = '';
         $this->nama = '';
-        $this->no_telp = '';
+        $this->email = '';
         $this->jumlah = '';
-        $this->total = 0;
-        $this->orderan_id = null;
+        $this->total_harga = 0;
+        $this->project_id = null;
         $this->uang_bayar = '';
         $this->mtdbyr = '';
         $this->kembalian = 0;
     }
-    public function calculateTotalHarga()
-    {
-        $layanan = LayananTbl::find($this->id_layanan);
-        if ($layanan) {
-            if (is_numeric($this->jumlah) && is_numeric($layanan->harga)) {
-                $this->total = $layanan->harga * $this->jumlah;
-            }
-
-            if ($this->jumlah == 0 || $this->jumlah == null) {
-                $this->total = 0;
-            }
-        } else {
-            $this->total = 0;
-        }
-    }
-    public function calculateKembalian()
-    {
-        if (is_numeric($this->uang_bayar)) {
-            $this->kembalian = $this->uang_bayar - $this->total;
-        }
-
-        if ($this->uang_bayar == 0) {
-            $this->kembalian = 0;
-        }
-    }
-
     public function store()
     {
         $this->validate([
-            'id_layanan' => 'required',
-            'jumlah' => 'required|numeric|min:0',
             'nama' => 'required',
-            'no_telp' => 'required',
+            'email' => 'required',
         ]);
 
-        $konsumen_terdaftar = KonsumenTbl::where('nama', $this->nama)
-            ->where('no_telp', $this->no_telp)
-            ->first();
+        $konsumen_terdaftar = KonsumenTbl::where('nama', $this->nama)->where('email', $this->email)->first();
         if ($konsumen_terdaftar) {
             $konsumen = $konsumen_terdaftar;
         } else {
             $konsumen = KonsumenTbl::create([
                 'nama' => $this->nama,
-                'no_telp' => $this->no_telp,
+                'email' => $this->email,
             ]);
         }
 
-        $base_code = 'LDR-' . $konsumen->id . date('mdy');
+        $base_code = 'PRJ-' . $konsumen->id . date('mdy');
 
-        $existing_orders_count = OrderTbl::where('kode_laundry', 'like', $base_code . '%')->count();
+        $existing_orders_count = ProjectTbl::where('kode_project', 'like', $base_code . '%')->count();
 
         $suffix = $existing_orders_count > 0 ? rand(10, 99) : '';
 
-        $order = OrderTbl::create([
-            'kode_laundry' => $base_code . $suffix,
+        $project = ProjectTbl::create([
+            'kode_project' => $base_code . $suffix,
             'id_konsumens' => $konsumen->id,
             'id_layanans' => $this->id_layanan,
-            'jumlah' => $this->jumlah,
-            'total_harga' => $this->total,
+            'status' => 'baru',
+            'total_harga' => $this->total_harga,
+            'sisa_pembayaran' => $this->total_harga,
+            'tanggal_pengingat' => $this->tanggal_pengingat,
+            'keterangan' => $this->keterangan,
         ]);
 
         PembayaranTbl::create([
-            'id_orders' => $order->id,
+            'id_project' => $project->id,
+            'status_pembayaran' => 'belum lunas',
         ]);
 
         $this->resetInput();
-        $this->total = 0;
+        $this->total_harga = 0;
         $this->alert('success', 'Berhasil Ditambahkan!', [
             'position' => 'center',
             'timer' => 3000,
@@ -162,20 +131,20 @@ class Transaksi extends Component
             'timerProgressBar' => true,
         ]);
 
-        return redirect()->to('/barcode/' . $order->id);
+        return redirect()->to('/barcode/' . $project->id);
     }
     public function edit($id)
     {
-        $order = OrderTbl::find($id);
-        $this->orderan_id = $order->id;
-        $this->id_konsumen = $order->id_konsumens;
-        $this->id_layanan = $order->id_layanans;
-        $this->jumlah = $order->jumlah;
-        $this->total = $order->total_harga;
+        $project = ProjectTbl::find($id);
+        $this->project_id = $project->id;
+        $this->id_konsumen = $project->id_konsumens;
+        $this->id_layanan = $project->id_layanans;
+        $this->jumlah = $project->jumlah;
+        $this->total_harga = $project->total_harga;
 
-        $konsumen = KonsumenTbl::find($order->id_konsumens);
+        $konsumen = KonsumenTbl::find($project->id_konsumens);
         $this->nama = $konsumen->nama;
-        $this->no_telp = $konsumen->no_telp;
+        $this->email = $konsumen->email;
 
         $this->updatemode = true;
         $this->listmode = false;
@@ -186,19 +155,19 @@ class Transaksi extends Component
             'id_layanan' => 'required',
             'jumlah' => 'required|numeric|min:0',
             'nama' => 'required',
-            'no_telp' => 'required',
+            'email' => 'required',
         ]);
 
-        $order = OrderTbl::find($this->orderan_id);
-        $order->id_konsumens = $this->id_konsumen;
-        $order->id_layanans = $this->id_layanan;
-        $order->jumlah = $this->jumlah;
-        $order->total_harga = $this->total;
-        $order->save();
+        $project = ProjectTbl::find($this->project_id);
+        $project->id_konsumens = $this->id_konsumen;
+        $project->id_layanans = $this->id_layanan;
+        $project->jumlah = $this->jumlah;
+        $project->total_harga = $this->total_harga;
+        $project->save();
 
         $konsumen = KonsumenTbl::find($this->id_konsumen);
         $konsumen->nama = $this->nama;
-        $konsumen->no_telp = $this->no_telp;
+        $konsumen->email = $this->email;
         $konsumen->save();
 
         $this->resetInput();
@@ -219,8 +188,8 @@ class Transaksi extends Component
     }
     public function destroy($id)
     {
-        $order = OrderTbl::find($id);
-        $order->delete();
+        $project = ProjectTbl::find($id);
+        $project->delete();
         $this->alert('success', 'Berhasil Dihapus!', [
             'position' => 'center',
             'timer' => 3000,
@@ -230,45 +199,38 @@ class Transaksi extends Component
     }
     public function show($id)
     {
-        $this->detailon = true;
-        $order = OrderTbl::find($id);
-        $this->orderan_id = $order->id;
-        $this->id_konsumen = $order->id_konsumens;
-        $this->id_layanan = $order->id_layanans;
-        $this->jumlah = $order->jumlah;
-        $this->total = $order->total_harga;
-        $this->laundrycode = $order->kode_laundry;
-        $this->status = $order->status;
+        $project = ProjectTbl::findOrFail($id);
 
-        $paymentord = PembayaranTbl::where('id_orders', $this->orderan_id)->first();
-        $this->uang_bayar = $paymentord->uang_bayar;
-        $this->mtdbyr = $paymentord->metode_pembayaran;
-        $this->kembalian = $paymentord->kembalian;
+        $this->project_id = $project->id;
+        $this->id_konsumen = $project->id_konsumens;
+        $this->id_layanan = $project->id_layanans;
+        $this->jumlah = $project->jumlah;
+        $this->total_harga = $project->total_harga;
+        $this->laundrycode = $project->kode_project;
+        $this->status = $project->status;
 
-        $konsumen = KonsumenTbl::find($order->id_konsumens);
-        $this->nama = $konsumen->nama;
-        $this->no_telp = $konsumen->no_telp;
-
-        $layanan = LayananTbl::find($order->id_layanans);
-        $this->layanan = $layanan->nama_layanan;
-        $this->sttsbyr = PembayaranTbl::where('id_orders', $order->id)->first()->status_pembayaran;
+        $payment = $project->pembayaran;
+        $this->uang_bayar = $payment->uang_bayar;
+        $this->mtdbyr = $payment->metode_pembayaran;
+        $this->kembalian = $payment->kembalian;
+        $this->sttsbyr = $payment->status_pembayaran;
     }
 
     public function updatestatus()
     {
-        $order = OrderTbl::find($this->orderan_id);
-        $order->status = $this->status;
-        $order->save();
+        $project = ProjectTbl::find($this->project_id);
+        $project->status = $this->status;
+        $project->save();
         session()->flash('message', 'Status orderan berhasil diupdate.');
     }
 
     public function bayarupdate()
     {
-        $paymentord = PembayaranTbl::where('id_orders', $this->orderan_id)->first();
-        $this->total = OrderTbl::find($this->orderan_id)->total_harga;
+        $paymentord = PembayaranTbl::where('id_orders', $this->project_id)->first();
+        $this->total_harga = ProjectTbl::find($this->project_id)->total_harga;
         $this->validate(
             [
-                'uang_bayar' => 'required|numeric|min:' . $this->total,
+                'uang_bayar' => 'required|numeric|min:' . $this->total_harga,
             ],
             [
                 'uang_bayar.min' => 'Uang bayar harus lebih besar atau sama dengan total harga.',
@@ -314,7 +276,7 @@ class Transaksi extends Component
         $konsumenlist = KonsumenTbl::select('*')->where('id', $id)->first();
 
         $this->nama = $konsumenlist->nama;
-        $this->no_telp = $konsumenlist->no_telp;
+        $this->email = $konsumenlist->email;
         $this->showresult = false;
     }
 }
