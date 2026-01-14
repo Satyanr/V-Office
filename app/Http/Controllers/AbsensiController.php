@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absensi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class AbsensiController extends Controller
 {
@@ -20,12 +21,35 @@ class AbsensiController extends Controller
 
     public function store(Request $request)
     {
+        $now = Carbon::now('Asia/Jakarta');
+
+        if ($now->format('H:i') < '07:30') {
+            return redirect()
+                ->back()
+                ->withErrors(['absen' => 'Absensi hanya dapat dilakukan mulai pukul 07:30 WIB']);
+        }
+
         $request->validate([
             'name' => 'required',
             'status' => 'required|in:Absen Masuk,Absen Keluar',
             'image' => 'required',
             'waktu_masuk' => 'required',
         ]);
+
+        // ========================
+        // CEK DUPLIKAT ABSENSI
+        // ========================
+        $tanggalAbsen = Carbon::parse($request->waktu_masuk, 'Asia/Jakarta')->toDateString();
+
+        $sudahAbsen = Absensi::where('name', $request->name)->where('status', $request->status)->whereDate('waktu_masuk', $tanggalAbsen)->exists();
+
+        if ($sudahAbsen) {
+            return redirect()
+                ->back()
+                ->withErrors([
+                    'absen' => "❌ {$request->name} sudah melakukan {$request->status} pada tanggal {$tanggalAbsen}",
+                ]);
+        }
 
         // ========================
         // SIMPAN FOTO
@@ -47,16 +71,29 @@ class AbsensiController extends Controller
         // HITUNG KETERANGAN
         // ========================
         $status = $request->status;
-        $waktu = \Carbon\Carbon::parse($request->waktu_masuk);
+        $waktu = Carbon::parse($request->waktu_masuk, 'Asia/Jakarta');
+
+        // 1 = Senin ... 6 = Sabtu, 7 = Minggu
+        $hari = $waktu->isoWeekday();
 
         $keterangan = 'Tepat Waktu';
 
-        if ($status === 'Absen Masuk' && $waktu->format('H:i') > '08:30') {
-            $keterangan = 'Terlambat';
-        }
-
-        if ($status === 'Absen Keluar' && $waktu->format('H:i') > '19:00') {
+        // ========================
+        // WEEKEND = LEMBUR
+        // ========================
+        if ($hari == 6 || $hari == 7) {
             $keterangan = 'Lembur';
+        } else {
+            // ========================
+            // HARI KERJA
+            // ========================
+            if ($status === 'Absen Masuk' && $waktu->format('H:i') > '08:30') {
+                $keterangan = 'Terlambat';
+            }
+
+            if ($status === 'Absen Keluar' && $waktu->format('H:i') > '19:00') {
+                $keterangan = 'Lembur';
+            }
         }
 
         // ========================
