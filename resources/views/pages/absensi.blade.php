@@ -149,13 +149,13 @@
                                 <div class="camera-box">
                                     <div id="my_camera" class="d-none"></div>
                                     <div id="camera_placeholder" class="text-white-50 text-center px-3">
-                                        Klik <span class="text-white fw-semibold">Open Camera</span> untuk mulai.
+                                        Klik <span class="text-white fw-semibold">Buka Kamera</span> untuk mulai.
                                     </div>
                                 </div>
 
                                 <div class="d-flex gap-2 mt-3 flex-wrap">
                                     <button type="button" class="btn btn-primary" id="open_camera">
-                                        <i class="fa-solid fa-play me-1"></i> Buka Camera
+                                        <i class="fa-solid fa-play me-1"></i> Buka Kamera
                                     </button>
 
                                     <button type="button" class="btn btn-outline-secondary d-none" id="take_snap">
