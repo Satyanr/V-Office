@@ -1,9 +1,9 @@
-{{-- <div class="row justify-content-center">
+<div class="row justify-content-center">
     <div class="col-auto">
         <div class="card">
             <div class="card-body text-center text-white text-bg-warning">
                 <h3><i class="fa-solid fa-user-clock"></i> <br></h3>
-                <h6>Laundryan Dalam Proses : <br>{{ $statusProsesCount }}</h6>
+                {{-- <h6>Laundryan Dalam Proses : <br>{{ $statusProsesCount }}</h6> --}}
             </div>
         </div>
     </div>
@@ -11,7 +11,7 @@
         <div class="card">
             <div class="card-body text-center text-white text-bg-info">
                 <h3><i class="fa-solid fa-user-check"></i> <br></h3>
-                <h6>Laundryan Belum Diambil : <br>{{ $statusBelumDiambilCount }}</h6>
+                {{-- <h6>Laundryan Belum Diambil : <br>{{ $statusBelumDiambilCount }}</h6> --}}
             </div>
         </div>
     </div>
@@ -20,9 +20,11 @@
             <div class="col-auto">
                 <div class="col-auto" style="margin-left: auto;">
                     <div class="input-group mt-2">
-                        <span class="input-group-text" id="basic-addon1"><i class="fa-solid fa-magnifying-glass"></i></span>
-                        <input type="text" class="form-control" placeholder="Cari Laundryan" aria-label="Cari Berdasarkan Kode"
-                            aria-describedby="basic-addon1" wire:model='searchorder' wire:input='resetPageOrder'>
+                        <span class="input-group-text" id="basic-addon1"><i
+                                class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" class="form-control" placeholder="Cari Laundryan"
+                            aria-label="Cari Berdasarkan Kode" aria-describedby="basic-addon1" wire:model='searchorder'
+                            wire:input='resetPageOrder'>
                     </div>
                 </div>
             </div>
@@ -31,8 +33,9 @@
             <div class="col-auto" style="margin-left: auto;">
                 <div class="input-group mt-2">
                     <span class="input-group-text" id="basic-addon1"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input type="text" class="form-control" placeholder="Cari Konsumen" aria-label="Cari Berdasarkan Konsumen"
-                        aria-describedby="basic-addon1" wire:model='searchkonsumen' wire:input='resetPageOrder'>
+                    <input type="text" class="form-control" placeholder="Cari Konsumen"
+                        aria-label="Cari Berdasarkan Konsumen" aria-describedby="basic-addon1"
+                        wire:model='searchkonsumen' wire:input='resetPageOrder'>
                 </div>
             </div>
         </div>
@@ -93,59 +96,87 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($orders as $order)
+                @forelse ($projects as $project)
                     <tr>
-                        <td>{{ $order->updated_at->format('d-m-y') }}</td>
-                        <td>{{ $order->kode_laundry }}</td>
-                        <td>{{$order->konsumen->nama}}</td>
-                        <td>{{ 'Rp' . number_format($order->total_harga, 0, ',', '.') }}</td>
-                        <td>{{ $order->layanan->nama_layanan }}</td>
-                        <td class="@if ($order->status == 'baru') bg-danger @elseif($order->status == 'proses') bg-warning @else bg-success @endif text-white border"
-                            style="text-transform: uppercase;">
-                            <button type="button" wire:click='show({{ $order->id }})'
+                        <td>{{ $project->updated_at->format('d-m-Y') }}</td>
+
+                        {{-- kode_project --}}
+                        <td>{{ $project->kode_project }}</td>
+
+                        {{-- konsumen --}}
+                        <td>{{ $project->konsumen->nama ?? '-' }}</td>
+
+                        {{-- total_harga --}}
+                        <td>Rp{{ number_format($project->total_harga, 0, ',', '.') }}</td>
+
+                        {{-- layanan (nullable) --}}
+                        <td>{{ $project->layanan->nama_layanan ?? '-' }}</td>
+
+                        {{-- status project --}}
+                        <td
+                            class="
+        @if ($project->status == 'baru') bg-danger
+        @elseif ($project->status == 'proses') bg-warning
+        @elseif ($project->status == 'selesai') bg-success
+        @else bg-secondary @endif
+        text-white text-uppercase
+    ">
+                            <button type="button" wire:click="show({{ $project->id }})"
                                 class="btn btn-outline-light border-0" data-bs-toggle="modal"
                                 data-bs-target="#ModalInfo">
-                                {{ ucfirst(trans($order->status)) }}
+                                {{ ucfirst($project->status) }}
                             </button>
                         </td>
-                        <td class="@if ($order->pembayaran->status_pembayaran == 'lunas') bg-success @else bg-danger @endif text-white"
-                            style="text-transform: uppercase;">
-                            <button type="button" wire:click='show({{ $order->id }})'
+
+                        {{-- status pembayaran --}}
+                        <td
+                            class="
+        {{ $project->pembayaran->status_pembayaran == 'lunas' ? 'bg-success' : 'bg-danger' }}
+        text-white text-uppercase
+    ">
+                            <button type="button" wire:click="show({{ $project->id }})"
                                 class="btn btn-outline-light border-0" data-bs-toggle="modal"
                                 data-bs-target="#ModalInfo">
-                                {{ ucfirst(trans($order->pembayaran->status_pembayaran)) }}</button>
+                                {{ ucfirst($project->pembayaran->status_pembayaran) }}
+                            </button>
                         </td>
+
+                        {{-- aksi --}}
                         <td>
                             <div class="btn-group dropend">
                                 <button type="button" class="btn btn-outline-dark dropdown-toggle border-0"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    data-bs-toggle="dropdown">
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
+
                                 <ul class="dropdown-menu text-center">
                                     <li>
                                         <button type="button" class="btn btn-outline-warning border-0"
-                                            wire:click.prevent='edit({{ $order->id }})'>
+                                            wire:click.prevent="edit({{ $project->id }})">
                                             <i class="fa fa-pencil"></i> Edit
                                         </button>
                                     </li>
-                                    @if (auth()->user()->role == 'Admin')
+
+                                    @if (auth()->user()->role === 'Admin')
                                         <li>
                                             <button type="button" class="btn btn-outline-danger border-0"
-                                                wire:click.prevent='destroy({{ $order->id }})'>
+                                                wire:click.prevent="destroy({{ $project->id }})">
                                                 <i class="fa fa-trash"></i> Hapus
                                             </button>
                                         </li>
                                     @endif
+
                                     <li>
-                                        <button type="button" wire:click='show({{ $order->id }})'
-                                            class="btn btn-outline-primary border-0" data-bs-toggle="modal"
+                                        <button type="button" class="btn btn-outline-primary border-0"
+                                            wire:click="show({{ $project->id }})" data-bs-toggle="modal"
                                             data-bs-target="#ModalInfo">
                                             <i class="fa fa-eye"></i> Detail
                                         </button>
                                     </li>
+
                                     <li>
                                         <a class="btn btn-outline-primary border-0"
-                                            href="{{ route('barcode', $order->id) }}">
+                                            href="{{ route('barcode', $project->id) }}">
                                             <i class="fa-solid fa-qrcode"></i> QR Code
                                         </a>
                                     </li>
@@ -155,8 +186,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7">
-                            <h5 class="text-center">Tidak ada orderan</h5>
+                        <td colspan="8">
+                            <h5 class="text-center">Tidak ada project</h5>
                         </td>
                     </tr>
                 @endforelse
@@ -166,7 +197,7 @@
 </div>
 <div class="row">
     <div class="col">
-        {{ $orders->links() }}
+        {{ $projects->links() }}
     </div>
 </div>
 
@@ -587,4 +618,4 @@
             </div>
         </div>
     </div>
-</div> --}}
+</div>

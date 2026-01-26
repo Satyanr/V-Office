@@ -13,13 +13,13 @@ class ProjectTbl extends Model
     public function konsumen()
     {
         return $this->belongsTo(KonsumenTbl::class, 'id_konsumens');
-    }   
+    }
     public function layanan()
     {
         return $this->belongsTo(LayananTbl::class, 'id_layanans');
     }
     public function pembayaran()
     {
-        return $this->hasMany(PembayaranTbl::class, 'id_project');
+        return $this->hasOne(PembayaranTbl::class, 'id_project');
     }
 }

@@ -19,5 +19,4 @@ class PembayaranTbl extends Model
         return $this->belongsTo(ProjectTbl::class, 'id_project');
     }
 
-
 }

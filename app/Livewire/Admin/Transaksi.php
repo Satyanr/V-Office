@@ -226,14 +226,17 @@ class Transaksi extends Component
 
     public function bayarupdate()
     {
-        $paymentord = PembayaranTbl::where('id_orders', $this->project_id)->first();
-        $this->total_harga = ProjectTbl::find($this->project_id)->total_harga;
+        $paymentord = PembayaranTbl::where('id_project', $this->project_id)->first();
+        $project = ProjectTbl::find($this->project_id);
+
+        $this->total_harga = $project->total_harga;
+
+        // VALIDASI: boleh kurang dari total
         $this->validate(
             [
-                'uang_bayar' => 'required|numeric|min:' . $this->total_harga,
+                'uang_bayar' => 'required|numeric|min:0',
             ],
             [
-                'uang_bayar.min' => 'Uang bayar harus lebih besar atau sama dengan total harga.',
                 'uang_bayar.required' => 'Uang bayar harus diisi.',
                 'uang_bayar.numeric' => 'Uang bayar harus berupa angka.',
             ],
@@ -243,12 +246,26 @@ class Transaksi extends Component
             $this->mtdbyr = 'cash';
         }
 
+        // LOGIKA CREDIT / LUNAS
+        if ($this->uang_bayar >= $this->total_harga) {
+            // LUNAS
+            $paymentord->status_pembayaran = 'lunas';
+            $paymentord->kembalian = $this->uang_bayar - $this->total_harga;
+            $project->sisa_pembayaran = 0;
+        } else {
+            // BELUM LUNAS / CREDIT
+            $paymentord->status_pembayaran = 'belum lunas';
+            $paymentord->kembalian = 0;
+            $project->sisa_pembayaran = $this->total_harga - $this->uang_bayar;
+        }
+
         $paymentord->uang_bayar = $this->uang_bayar;
-        $paymentord->kembalian = $this->uang_bayar - $this->total;
         $paymentord->metode_pembayaran = $this->mtdbyr;
-        $paymentord->status_pembayaran = 'lunas';
         $paymentord->save();
-        $this->alert('success', 'Berhasil Ditambahkan!', [
+
+        $project->save();
+
+        $this->alert('success', 'Pembayaran berhasil disimpan!', [
             'position' => 'center',
             'timer' => 3000,
             'toast' => false,
