@@ -24,7 +24,7 @@ use App\Models\Absensi;
 Route::get('/', function () {
     return view('pages.absensi');
 });
-Route::get('/info-laundryan/{kode_laundry}',  [InfoController::class, 'infoLaundryan']);
+Route::get('/info-laundryan/{kode_laundry}', [InfoController::class, 'infoLaundryan']);
 
 Auth::routes([
     'register' => false,
@@ -34,8 +34,9 @@ Auth::routes([
 
 Route::controller(AbsensiController::class)->group(function () {
     Route::get('/absensi', 'absen')->name('absensi');
-    Route::post('/absensi', [AbsensiController::class, 'store'])->name('absen.store');
+    Route::post('/absensi', 'store')->name('absen.store');
     Route::get('/export-absensi', 'export')->name('absensi.export');
+    Route::get('/pengajuan', 'pengajuan')->name('pengajuan');
 });
 
 Route::get('/home', function () {
@@ -74,5 +75,6 @@ Route::controller(Controller::class)->group(function () {
         Route::get('/layanan', 'layanan')->name('layanan');
     });
     Route::get('/rekap-absensi', 'rekapabsensi')->name('rekap-absensi');
+    Route::get('/list-pengajuan', 'listpengajuan')->name('list-pengajuan');
     Route::get('/konsumen', 'konsumen')->name('project');
 });

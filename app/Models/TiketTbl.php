@@ -19,4 +19,9 @@ class TiketTbl extends Model
     {
         return $this->belongsTo(SparepartLuarTbl::class, 'id_sparepart_luar');
     }
+
+    public function sparepartFlows()
+    {
+        return $this->hasMany(SparepartFlowTbl::class, 'id_tiket');
+    }
 }

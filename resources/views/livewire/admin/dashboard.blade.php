@@ -1,4 +1,4 @@
-<div>
+{{-- <div>
 <div class="row my-3">
     <div class="col">
         <div class="card text-center rounded-4" style="width: 18rem;">
@@ -85,7 +85,7 @@
 <div class="row my-3">
     <div class="col">
         <div class="row">
-            <div class="col">
+            <di v class="col">
                 <h3 class="text-center">Riwayat Orderan</h3>
             </div>
         </div>
@@ -212,4 +212,86 @@
         </div>
     </div>
 </div>
+</div> --}}
+
+<div>
+    <h4 class="mb-3">Manajemen Karyawan</h4>
+
+    @if (session()->has('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- FORM -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}">
+                <div class="mb-2">
+                    <label>Nama</label>
+                    <input type="text" wire:model.defer="name" class="form-control">
+                    @error('name')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="mb-2">
+                    <label>Cuti</label>
+                    <input type="text" wire:model.defer="cuti" class="form-control">
+                </div>
+
+                <button class="btn btn-primary">
+                    {{ $isEdit ? 'Update' : 'Simpan' }}
+                </button>
+
+                @if ($isEdit)
+                    <button type="button" wire:click="resetForm" class="btn btn-secondary">
+                        Batal
+                    </button>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="mb-2">
+        <input type="text" wire:model.live="search" class="form-control" placeholder="Cari nama karyawan...">
+    </div>
+
+    <!-- TABLE -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th>Nama</th>
+                <th>CUti</th>
+                <th width="20%">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($karyawans as $item)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $item->name }}</td>
+                    <td>{{ $item->cuti }}</td>
+                    <td>
+                        <button wire:click="edit({{ $item->id }})" class="btn btn-sm btn-warning">
+                            Edit
+                        </button>
+                        <button wire:click="delete({{ $item->id }})"
+                            onclick="confirm('Hapus data ini?') || event.stopImmediatePropagation()"
+                            class="btn btn-sm btn-danger">
+                            Hapus
+                        </button>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="4" class="text-center">Data kosong</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    {{ $karyawans->links() }}
 </div>

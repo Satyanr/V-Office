@@ -29,4 +29,9 @@ class LedTbl extends Model
     {
         return $this->hasMany(TiketTbl::class, 'id_ledtbl');
     }
+
+    public function sparepartFlows()
+    {
+        return $this->hasMany(SparepartFlowTbl::class, 'id_led');
+    }
 }

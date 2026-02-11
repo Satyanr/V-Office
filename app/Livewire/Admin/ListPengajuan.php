@@ -2,14 +2,13 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\Absensi;
 use Livewire\Component;
+use App\Models\Absensi;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AbsensiExport;
 use Illuminate\Support\Facades\File;
 
-class Rekapabsensi extends Component
+class ListPengajuan extends Component
 {
     use WithPagination;
 
@@ -49,13 +48,6 @@ class Rekapabsensi extends Component
         return 'components.pagination_custom';
     }
 
-    public function export()
-    {
-        $this->validate();
-
-        return Excel::download(new AbsensiExport($this->exportFromDate, $this->exportToDate), 'Rekap-Absen-' . $this->exportFromDate . '-sampai-' . $this->exportToDate . '.xlsx');
-    }
-
     public function render()
     {
         $query = Absensi::query();
@@ -76,7 +68,7 @@ class Rekapabsensi extends Component
             $query->whereDate('waktu_masuk', $this->filterTanggal);
         }
 
-        return view('livewire.admin.rekapabsensi', [
+        return view('livewire.admin.list-pengajuan', [
             'absensis' => $query->orderBy('id', 'desc')->paginate(5, ['*'], $this->paginationName),
         ]);
     }

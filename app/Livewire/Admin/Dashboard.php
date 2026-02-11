@@ -3,50 +3,80 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-use App\Models\OrderTbl;
-use App\Models\KonsumenTbl;
 use Livewire\WithPagination;
-use App\Models\PembayaranTbl;
+use App\Models\KaryawanTbl;
 
 class Dashboard extends Component
 {
-    public $searchorder, $filterorder, $filterbyr;
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
-    protected $paginationName = 'Page';
-    public function paginationView()
+
+    public $name, $cuti, $karyawan_id;
+    public $search = '';
+    public $isEdit = false;
+
+    protected $rules = [
+        'name' => 'required|string|min:3',
+        'cuti' => 'nullable|string',
+    ];
+
+    public function resetForm()
     {
-        return 'components.pagination_custom';
-    }
-    public function resetPageOrder()
-    {
-        $this->gotoPage(1, 'Page');
+        $this->name = '';
+        $this->cuti = '';
+        $this->karyawan_id = null;
+        $this->isEdit = false;
     }
 
-    public function setValueStatus()
+    public function store()
     {
-        if ($this->filterbyr != 'Belum Lunas') {
-            $this->filterbyr = 'Belum Lunas';
-        } else {
-            $this->filterbyr = '';
-        }
+        $this->validate();
+
+        KaryawanTbl::create([
+            'name' => $this->name,
+            'cuti' => $this->cuti,
+        ]);
+
+        session()->flash('success', 'Karyawan berhasil ditambahkan');
+        $this->resetForm();
     }
+
+    public function edit($id)
+    {
+        $data = KaryawanTbl::findOrFail($id);
+
+        $this->karyawan_id = $data->id;
+        $this->name = $data->name;
+        $this->cuti = $data->cuti;
+        $this->isEdit = true;
+    }
+
+    public function update()
+    {
+        $this->validate();
+
+        KaryawanTbl::where('id', $this->karyawan_id)->update([
+            'name' => $this->name,
+            'cuti' => $this->cuti,
+        ]);
+
+        session()->flash('success', 'Data karyawan berhasil diupdate');
+        $this->resetForm();
+    }
+
+    public function delete($id)
+    {
+        KaryawanTbl::findOrFail($id)->delete();
+        session()->flash('success', 'Data karyawan berhasil dihapus');
+    }
+
     public function render()
     {
-        $searchorder = '%' . $this->searchorder . '%';
-        $filterorder = '%' . $this->filterorder . '%';
         return view('livewire.admin.dashboard', [
-            'totalkonsumen' => KonsumenTbl::count(),
-            'totalmskbulann' => OrderTbl::whereMonth('created_at', date('m'))->sum('total_harga'),
-            'totalorder' => OrderTbl::whereMonth('created_at', date('m'))->count(),
-            'orders' => OrderTbl::where('kode_laundry', 'LIKE', $searchorder)
-                ->where('status', 'LIKE', $filterorder)
-                ->whereHas('pembayaran', function ($query) {
-                    $filterbyr = '%' . $this->filterbyr . '%';
-                    $query->where('status_pembayaran', 'LIKE', $filterbyr);
-                })
-                ->orderBy('id', 'DESC')
-                ->paginate(5, ['*'], $this->paginationName),
+            'karyawans' => KaryawanTbl::where('name', 'like', '%' . $this->search . '%')
+                ->latest()
+                ->paginate(5),
         ]);
     }
 }

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('tiket_tbls', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_ledtbl')->constrained('led_tbls')->onDelete('cascade');
-            $table->foreignId('id_sparepart_luar')->nullable()->constrained('sparepart_luar_tbls')->onDelete('set null');
             $table->string('kode_tiket')->unique();
             $table->date('tanggal_laporan')->nullable();
             $table->date('tanggal_solve')->nullable();

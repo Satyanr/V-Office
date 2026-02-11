@@ -36,6 +36,11 @@ class Controller extends BaseController
         return view('pages.rekapabsensi');
     }
 
+    public function listpengajuan()
+    {
+        return view('pages.list-pengajuan');
+    }
+
     public function dashboard()
     {
         return view('dashboard');

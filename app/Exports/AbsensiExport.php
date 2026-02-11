@@ -19,6 +19,7 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
     protected $fromDate;
     protected $toDate;
     protected $data; // SIMPAN DATA FILTER
+    protected $summary;
 
     public function __construct($fromDate = null, $toDate = null)
     {
@@ -35,6 +36,19 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
         }
 
         $this->data = $query->orderBy('waktu_masuk', 'ASC')->get();
+
+        // ===== SUMMARY PER NAMA =====
+        $this->summary = $this->data->groupBy('name')->map(function ($rows) {
+            return [
+                'tepat_waktu' => $rows->where('keterangan', 'Tepat Waktu')->count(),
+                'terlambat' => $rows->where('keterangan', 'Terlambat')->count(),
+                'lembur' => $rows->where('keterangan', 'Lembur')->count(),
+                'izin' => $rows->where('status', 'Izin Tidak Masuk')->count(),
+                'sakit' => $rows->where('status', 'Sakit')->count(),
+                'cuti' => $rows->where('status', 'Cuti')->count(),
+                'total' => $rows->count(),
+            ];
+        });
 
         return $this->data;
     }
@@ -139,6 +153,43 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
 
                 $sheet
                     ->getStyle("A2:{$lastColumn}{$endRow}")
+                    ->getBorders()
+                    ->getAllBorders()
+                    ->setBorderStyle(Border::BORDER_THIN);
+
+                /* ================= SHEET REKAP ================= */
+                $spreadsheet = $event->sheet->getParent();
+                $rekapSheet = $spreadsheet->createSheet();
+                $rekapSheet->setTitle('Rekap Absensi');
+
+                // Header
+                $rekapSheet->fromArray([['Nama', 'Tepat Waktu', 'Terlambat', 'Lembur', 'Total']], null, 'A1');
+
+                // Style header
+                $rekapSheet->getStyle('A1:E1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                $row = 2;
+
+                foreach ($this->summary as $name => $count) {
+                    $rekapSheet->fromArray([[$name, $count['tepat_waktu'], $count['terlambat'], $count['lembur'], $count['total']]], null, 'A' . $row);
+
+                    $row++;
+                }
+
+                // Auto width
+                foreach (range('A', 'E') as $col) {
+                    $rekapSheet->getColumnDimension($col)->setAutoSize(true);
+                }
+
+                // Border
+                $rekapSheet
+                    ->getStyle('A1:E' . ($row - 1))
                     ->getBorders()
                     ->getAllBorders()
                     ->setBorderStyle(Border::BORDER_THIN);

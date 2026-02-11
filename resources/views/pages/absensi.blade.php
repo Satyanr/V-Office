@@ -109,18 +109,29 @@
                         <div class="col-12 col-md-8">
                             <label class="form-label fw-semibold">Nama</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" name="name" class="form-control" placeholder="Masukkan nama"
-                                    required>
-                            </div>
-                        </div>
+                                <span class="input-group-text">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
 
+                                <input type="text" name="name" class="form-control" list="list-karyawan"
+                                    placeholder="Ketik nama karyawan" required>
+
+                                <datalist id="list-karyawan">
+                                    @foreach ($karyawans as $karyawan)
+                                        <option value="{{ $karyawan->name }}"></option>
+                                    @endforeach
+                                </datalist>
+                            </div>
+                            @error('name')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label fw-semibold">Status Absensi</label>
                             <select name="status" class="form-select" required>
                                 <option value="">-- Pilih Status --</option>
                                 <option value="Absen Masuk">Absen Masuk</option>
-                                <option value="Absen Keluar">Absen Keluar</option>
+                                <option value="Absen Pulang">Absen Pulang</option>
                             </select>
                         </div>
 
@@ -477,7 +488,7 @@
                 .addClass('text-danger')
                 .html(
                     `⏳ Dibuka dalam <b>${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}</b>`
-                    );
+                );
         }
 
         updateCountdown0700();
