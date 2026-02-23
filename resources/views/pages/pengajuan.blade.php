@@ -102,7 +102,7 @@
                                     <label class="form-label fw-semibold">
                                         Upload Foto (opsional)
                                     </label>
-                                    <input type="file" name="foto" class="form-control" accept="image/*"
+                                    <input type="file" name="image" class="form-control" accept="image/*"
                                         onchange="previewFoto(this)">
                                     <div class="form-text">
                                         JPG / PNG, maksimal 2MB

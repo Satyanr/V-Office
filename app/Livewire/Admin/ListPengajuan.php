@@ -3,10 +3,11 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-use App\Models\Absensi;
+use App\Models\ApprovalTbl; // ✅ GANTI
 use Livewire\WithPagination;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\File;
+use App\Models\Absensi;
+use Carbon\Carbon;
 
 class ListPengajuan extends Component
 {
@@ -20,22 +21,16 @@ class ListPengajuan extends Component
     public $filterKeterangan = '';
     public $filterTanggal = '';
 
-    public $exportFromDate;
-    public $exportToDate;
-
-    public $absensi_id;
+    public $approval_id;
     public $name;
     public $status;
     public $keterangan;
+    public $tanggal_awal;
+    public $tanggal_akhir;
+    public $approval;
 
     public $updateMode = false;
 
-    protected $rules = [
-        'exportFromDate' => 'required|date',
-        'exportToDate' => 'required|date|after_or_equal:exportFromDate',
-    ];
-
-    /* ================= RESET PAGINATION SAAT FILTER BERUBAH ================= */
     public function updated($property)
     {
         if (in_array($property, ['searchNama', 'filterStatus', 'filterKeterangan', 'filterTanggal'])) {
@@ -50,7 +45,7 @@ class ListPengajuan extends Component
 
     public function render()
     {
-        $query = Absensi::query();
+        $query = ApprovalTbl::query();
 
         if ($this->searchNama !== '') {
             $query->where('name', 'like', '%' . $this->searchNama . '%');
@@ -65,61 +60,73 @@ class ListPengajuan extends Component
         }
 
         if ($this->filterTanggal !== '') {
-            $query->whereDate('waktu_masuk', $this->filterTanggal);
+            $query->whereDate('tanggal_awal', $this->filterTanggal);
         }
 
         return view('livewire.admin.list-pengajuan', [
-            'absensis' => $query->orderBy('id', 'desc')->paginate(5, ['*'], $this->paginationName),
+            'approvals' => $query->orderBy('id', 'desc')->paginate(5, ['*'], $this->paginationName),
         ]);
     }
 
-    public function edit($id)
+    public function approve($id)
     {
-        $absensi = Absensi::findOrFail($id);
+        $approval = ApprovalTbl::findOrFail($id);
 
-        $this->absensi_id = $absensi->id;
-        $this->name = $absensi->name;
-        $this->status = $absensi->status;
-        $this->keterangan = $absensi->keterangan;
+        // Cegah approve 2x
+        if ($approval->approval === 'Approved') {
+            session()->flash('message', 'Pengajuan sudah pernah di-approve');
+            return;
+        }
 
-        $this->updateMode = true;
+        // Update status approval
+        $approval->update([
+            'approval' => 'Approved',
+        ]);
+
+        $start = Carbon::parse($approval->tanggal_awal);
+        $end = Carbon::parse($approval->tanggal_akhir);
+
+        while ($start->lte($end)) {
+            // Cek duplicate berdasarkan tanggal di waktu_masuk
+            $exists = Absensi::where('name', $approval->name)->whereDate('waktu_masuk', $start->toDateString())->where('status', $approval->status)->exists();
+
+            if (!$exists) {
+                Absensi::create([
+                    'name' => $approval->name,
+                    'photo_name' => $approval->photo_name,
+                    'status' => $approval->status,
+                    'keterangan' => $approval->status,
+                    'waktu_masuk' => $start->copy(),
+                ]);
+            }
+
+            $start->addDay();
+        }
+
+        session()->flash('message', 'Pengajuan berhasil di-approve & absensi dibuat otomatis');
     }
 
-    public function update()
+    public function reject($id)
     {
-        $this->validate([
-            'name' => 'required',
-            'status' => 'required',
-            'keterangan' => 'required',
+        ApprovalTbl::where('id', $id)->update([
+            'approval' => 'Rejected',
         ]);
 
-        Absensi::where('id', $this->absensi_id)->update([
-            'name' => $this->name,
-            'status' => $this->status,
-            'keterangan' => $this->keterangan,
-        ]);
-
-        $this->cancel();
-        session()->flash('message', 'Data berhasil diperbarui');
+        session()->flash('message', 'Pengajuan berhasil di-reject');
     }
 
     public function destroy($id)
     {
-        $absensi = Absensi::findOrFail($id);
+        $approval = ApprovalTbl::findOrFail($id);
 
-        if ($absensi->photo_name) {
-            $photoPath = public_path('storage/absensi/' . $absensi->photo_name);
+        if ($approval->photo_name) {
+            $photoPath = public_path('storage/absensi/' . $approval->photo_name);
             if (File::exists($photoPath)) {
                 File::delete($photoPath);
             }
         }
 
-        $absensi->delete();
-        session()->flash('message', 'Data & foto absensi berhasil dihapus');
-    }
-
-    public function cancel()
-    {
-        $this->reset(['absensi_id', 'name', 'status', 'keterangan', 'updateMode']);
+        $approval->delete();
+        session()->flash('message', 'Data berhasil dihapus');
     }
 }

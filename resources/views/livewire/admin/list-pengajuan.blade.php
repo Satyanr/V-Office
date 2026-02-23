@@ -90,15 +90,15 @@
             <div class="row">
                 <div class="col">
                     <div class="row" wire:loading.remove>
-                        @forelse ($absensis as $absensi)
+                        @forelse ($approvals as $approval)
                             <div class="col-md-6 col-lg-4 mb-3">
                                 <div class="card h-100 shadow-sm">
                                     <div class="card-body">
 
                                         {{-- FOTO --}}
                                         <div class="text-center mb-3">
-                                            @if ($absensi->photo_name && file_exists(public_path('storage/absensi/' . $absensi->photo_name)))
-                                                <img src="{{ asset('storage/absensi/' . $absensi->photo_name) }}"
+                                            @if ($approval->photo_name && file_exists(public_path('storage/absensi/' . $approval->photo_name)))
+                                                <img src="{{ asset('storage/absensi/' . $approval->photo_name) }}"
                                                     class="img-thumbnail preview-img"
                                                     style="width:100px; cursor:pointer" data-bs-toggle="modal"
                                                     data-bs-target="#photoPreviewModal" onclick="showPreview(this.src)">
@@ -109,25 +109,38 @@
 
                                         {{-- NAMA --}}
                                         <h6 class="text-center fw-bold mb-1">
-                                            {{ $absensi->name }}
+                                            {{ $approval->name }}
                                         </h6>
 
                                         {{-- TANGGAL --}}
                                         <p class="text-center text-muted mb-2">
-                                            {{ \Carbon\Carbon::parse($absensi->waktu_masuk)->format('d M Y') }} <br>
-                                            <small>{{ \Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i:s') }}</small>
+                                            <strong>
+                                                {{ \Carbon\Carbon::parse($approval->tanggal_awal)->format('d M Y') }}
+                                            </strong>
+
+                                            @if ($approval->tanggal_akhir)
+                                                <br>
+                                                s/d
+                                                {{ \Carbon\Carbon::parse($approval->tanggal_akhir)->format('d M Y') }}
+                                            @endif
+
+                                            <br>
+                                            <small>
+                                                Dibuat:
+                                                {{ $approval->created_at->format('d M Y H:i') }}
+                                            </small>
                                         </p>
 
                                         {{-- STATUS --}}
                                         <div class="text-center mb-2">
                                             <span class="badge bg-primary">
-                                                {{ $absensi->status }}
+                                                {{ $approval->status }}
                                             </span>
                                         </div>
 
                                         {{-- KETERANGAN --}}
                                         @php
-                                            $badgeClass = match ($absensi->keterangan) {
+                                            $badgeClass = match ($approval->keterangan) {
                                                 'Terlambat' => 'danger',
                                                 'Lembur' => 'info',
                                                 'Izin Tidak Masuk' => 'warning',
@@ -139,21 +152,54 @@
 
                                         <div class="text-center mb-3">
                                             <span class="badge bg-{{ $badgeClass }}">
-                                                {{ $absensi->keterangan }}
+                                                {{ $approval->keterangan }}
                                             </span>
                                         </div>
 
-                                        {{-- ACTION HR --}}
-                                        <div class="d-flex justify-content-between gap-2">
-                                            <button class="btn btn-success btn-sm w-100"
-                                                wire:click="approve({{ $absensi->id }})">
-                                                <i class="fa fa-check"></i> Approve
-                                            </button>
+                                        {{-- APPROVAL STATUS --}}
+                                        @php
+                                            $approvalBadge = match ($approval->approval) {
+                                                'Approved' => 'success',
+                                                'Rejected' => 'danger',
+                                                default => 'warning',
+                                            };
+                                        @endphp
 
-                                            <button class="btn btn-danger btn-sm w-100"
-                                                wire:click="reject({{ $absensi->id }})">
-                                                <i class="fa fa-times"></i> Reject
-                                            </button>
+                                        <div class="text-center mb-3">
+                                            <span class="badge bg-{{ $approvalBadge }}">
+                                                {{ $approval->approval }}
+                                            </span>
+                                        </div>
+
+                                        {{-- ACTION BUTTON --}}
+                                        <div class="d-grid gap-2">
+
+                                            {{-- Approve & Reject --}}
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-success btn-sm w-100"
+                                                    wire:click="approve({{ $approval->id }})">
+                                                    <i class="fa fa-check"></i> Approve
+                                                </button>
+
+                                                <button class="btn btn-danger btn-sm w-100"
+                                                    wire:click="reject({{ $approval->id }})">
+                                                    <i class="fa fa-times"></i> Reject
+                                                </button>
+                                            </div>
+
+                                            {{-- Edit & Delete --}}
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-warning btn-sm w-100"
+                                                    wire:click="edit({{ $approval->id }})">
+                                                    <i class="fa fa-edit"></i> Edit
+                                                </button>
+
+                                                <a href="#" class="btn btn-outline-danger btn-sm w-100"
+                                                    wire:click.prevent="destroy({{ $approval->id }})">
+                                                    <i class="fa fa-trash"></i> Hapus
+                                                </a>
+                                            </div>
+
                                         </div>
 
                                     </div>
@@ -196,7 +242,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    {{ $absensis->links() }}
+                    {{ $approvals->links() }}
                 </div>
             </div>
         </div>

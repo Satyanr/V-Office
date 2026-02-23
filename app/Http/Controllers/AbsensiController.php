@@ -56,20 +56,22 @@ class AbsensiController extends Controller
             ]);
         }
 
-        // simpan foto
-        $image = preg_replace('/^data:image\/\w+;base64,/', '', $request->image);
-        $image = str_replace(' ', '+', $image);
+        $imageName = null;
 
-        $imageName = 'absensi_' . time() . '_' . Str::random(5) . '.png';
-        $path = public_path('storage/absensi');
+        if ($request->filled('image')) {
+            $image = preg_replace('/^data:image\/\w+;base64,/', '', $request->image);
+            $image = str_replace(' ', '+', $image);
 
-        if (!is_dir($path)) {
-            mkdir($path, 0777, true);
+            $imageName = 'absensi_' . time() . '_' . Str::random(5) . '.png';
+            $path = public_path('storage/absensi');
+
+            if (!is_dir($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            file_put_contents("$path/$imageName", base64_decode($image));
         }
 
-        file_put_contents("$path/$imageName", base64_decode($image));
-
-        // keterangan
         $waktu = Carbon::parse($request->waktu_masuk, 'Asia/Jakarta');
         $hari = $waktu->isoWeekday();
 
@@ -77,9 +79,11 @@ class AbsensiController extends Controller
 
         if ($hari >= 6) {
             $keterangan = 'Lembur';
-        } elseif ($request->status === 'Absen Masuk' && $waktu->format('H:i') > '08:15') {
+        } elseif ($request->status === 'Absen Masuk' && $waktu->format('H:i') > '08:30') {
             $keterangan = 'Terlambat';
-        } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') < '17:00') {
+        } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') > '17:00') {
+            $keterangan = 'Lembur';
+        } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') < '16:30') {
             $keterangan = 'Pulang Awal';
         } elseif (in_array($request->status, ['Izin Tidak Masuk', 'Sakit', 'Cuti'])) {
             $keterangan = $request->status;
