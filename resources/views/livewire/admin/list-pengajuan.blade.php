@@ -88,8 +88,9 @@
                         <i class="fa fa-edit text-warning small"></i>
                     </button>
                     <button class="btn btn-white btn-sm shadow-sm rounded-circle" 
-                            wire:click.prevent="destroy({{ $approval->id }})" 
-                            onclick="confirm('Hapus data ini?') || event.stopImmediatePropagation()" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteConfirmModal"
+                            onclick="setDeleteId({{ $approval->id }})"
                             title="Hapus" 
                             style="width: 32px; height: 32px; padding: 0; background: white; border: 1px solid #eee;">
                         <i class="fa fa-trash text-danger small"></i>
@@ -136,17 +137,14 @@
                             <span class="small fw-bold text-dark">{{ \Carbon\Carbon::parse($approval->tanggal_akhir)->format('d M Y') }}</span>
                         </div>
                         @endif
-                        <div class="d-flex justify-content-between mt-2 pt-2 border-top">
-                            <span class="text-muted small">Keterangan:</span>
-                            @php
-                                $kColor = match ($approval->keterangan) {
-                                    'Terlambat' => 'danger',
-                                    'Lembur' => 'info',
-                                    'Izin Tidak Masuk' => 'warning',
-                                    default => 'success',
-                                };
-                            @endphp
-                            <span class="badge bg-{{ $kColor }} rounded-pill">{{ $approval->keterangan }}</span>
+                        <div class="mt-3">
+                            <span class="text-muted small d-block mb-1">Keterangan:</span>
+                            <div class="p-2 bg-light rounded-3 border-start border-primary border-3" 
+                                style="max-height: 80px; overflow-y: auto; font-size: 0.85rem;">
+                                <p class="mb-0 text-dark italic">
+                                    "{{ $approval->keterangan }}"
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -199,4 +197,41 @@
             </div>
         </div>
     </div>
+
+    {{-- delete confirmation modal --}}
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-body p-4 text-center">
+                    <div class="text-danger mb-3">
+                        <i class="fa-solid fa-circle-exclamation fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold">Hapus Data?</h5>
+                    <p class="text-muted small">Tindakan ini tidak dapat dibatalkan.</p>
+                    
+                    <input type="hidden" id="idToDelete">
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-center mt-4">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-danger rounded-pill px-4" onclick="executeDelete()">Ya, Hapus</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    let deleteId = null;
+
+    function setDeleteId(id) {
+        deleteId = id;
+    }
+
+    function executeDelete() {
+        if (deleteId) {
+            @this.call('destroy', deleteId);
+            bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        }
+    }
+</script>
