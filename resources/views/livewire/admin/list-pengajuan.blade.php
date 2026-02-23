@@ -1,248 +1,200 @@
 <div>
-    <div class="row text-center justify-content-between">
-        <div class="col">
-            <div class="row mb-3 align-items-end">
-                <div class="col-lg-12">
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 p-md-4 bg-white">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="small fw-bold text-muted mb-1">Cari Nama</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="fa fa-search text-muted"></i></span>
+                    <input type="text" class="form-control bg-light border-0" placeholder="Ketik nama..." wire:model.live.debounce.300ms="searchNama">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Status Absen</label>
+                <select class="form-select bg-light border-0" wire:model.live="filterStatus">
+                    <option value="">Semua Status</option>
+                    <option value="Absen Masuk">Absen Masuk</option>
+                    <option value="Absen Pulang">Absen Pulang</option>
+                    <option value="Izin Tidak Masuk">Izin Tidak Masuk</option>
+                    <option value="Sakit">Sakit</option>
+                    <option value="Cuti">Cuti</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Keterangan</label>
+                <select class="form-select bg-light border-0" wire:model.live="filterKeterangan">
+                    <option value="">Semua Keterangan</option>
+                    <option value="Tepat Waktu">Tepat Waktu</option>
+                    <option value="Terlambat">Terlambat</option>
+                    <option value="Lembur">Lembur</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="small fw-bold text-muted mb-1">Tanggal</label>
+                <input type="date" class="form-control bg-light border-0" wire:model.live="filterTanggal">
+            </div>
+        </div>
+    </div>
+
+    {{-- Update Mode --}}
+    @if ($updateMode)
+    <div class="card border-0 shadow-lg rounded-4 mb-4 overflow-hidden border-start border-primary border-5">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa fa-edit me-2"></i>Edit Pengajuan: <span class="text-primary">{{ $name }}</span></h5>
+                <button class="btn-close" wire:click="cancel"></button>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" wire:model="name">
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" wire:model="status">
+                        <option value="Absen Masuk">Absen Masuk</option>
+                        <option value="Absen Pulang">Absen Pulang</option>
+                        <option value="Izin Tidak Masuk">Izin Tidak Masuk</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Cuti">Cuti</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" wire:model="keterangan">
+                        <option value="Tepat Waktu">Tepat Waktu</option>
+                        <option value="Terlambat">Terlambat</option>
+                        <option value="Lembur">Lembur</option>
+                        <option value="Cuti">Cuti</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Izin Tidak Masuk">Izin Tidak Masuk</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-3 text-end">
+                <button class="btn btn-primary rounded-pill px-4" wire:click="update">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Grid Content --}}
+    <div class="row g-4">
+        @forelse ($approvals as $approval)
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative pengajuan-card">
+                
+                {{-- button delet dan edit --}}
+                <div class="position-absolute" style="top: 15px; right: 15px; z-index: 10;">
+                    <button class="btn btn-white btn-sm shadow-sm rounded-circle me-1" 
+                            wire:click="edit({{ $approval->id }})" title="Edit" 
+                            style="width: 32px; height: 32px; padding: 0; background: white; border: 1px solid #eee;">
+                        <i class="fa fa-edit text-warning small"></i>
+                    </button>
+                    <button class="btn btn-white btn-sm shadow-sm rounded-circle" 
+                            wire:click.prevent="destroy({{ $approval->id }})" 
+                            onclick="confirm('Hapus data ini?') || event.stopImmediatePropagation()" 
+                            title="Hapus" 
+                            style="width: 32px; height: 32px; padding: 0; background: white; border: 1px solid #eee;">
+                        <i class="fa fa-trash text-danger small"></i>
+                    </button>
+                </div>
+
+                {{-- Status bar --}}
+                @php
+                    $barColor = match ($approval->approval) {
+                        'Approved' => '#10b981', // hejo
+                        'Rejected' => '#ef4444', // berem
+                        default => '#f59e0b', // koneng
+                    };
+                @endphp
+                <div style="height: 5px; background-color: {{ $barColor }};"></div>
+
+                <div class="card-body p-4 pt-5">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            @if ($approval->photo_name && file_exists(public_path('storage/absensi/' . $approval->photo_name)))
+                                <img src="{{ asset('storage/absensi/' . $approval->photo_name) }}" 
+                                     class="rounded-3 shadow-sm" style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
+                                     data-bs-toggle="modal" data-bs-target="#photoPreviewModal" onclick="showPreview(this.src)">
+                            @else
+                                <div class="bg-light rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px;">
+                                    <i class="fa fa-camera text-muted"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="ms-3 pe-5">
+                            <h6 class="fw-bold mb-0 text-dark">{{ $approval->name }}</h6>
+                            <span class="text-muted small">{{ $approval->status }}</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-light rounded-4 p-3 mb-3 border-0">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Tanggal:</span>
+                            <span class="small fw-bold text-dark">{{ \Carbon\Carbon::parse($approval->tanggal_awal)->format('d M Y') }}</span>
+                        </div>
+                        @if($approval->tanggal_akhir)
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Sampai:</span>
+                            <span class="small fw-bold text-dark">{{ \Carbon\Carbon::parse($approval->tanggal_akhir)->format('d M Y') }}</span>
+                        </div>
+                        @endif
+                        <div class="d-flex justify-content-between mt-2 pt-2 border-top">
+                            <span class="text-muted small">Keterangan:</span>
+                            @php
+                                $kColor = match ($approval->keterangan) {
+                                    'Terlambat' => 'danger',
+                                    'Lembur' => 'info',
+                                    'Izin Tidak Masuk' => 'warning',
+                                    default => 'success',
+                                };
+                            @endphp
+                            <span class="badge bg-{{ $kColor }} rounded-pill">{{ $approval->keterangan }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="small text-muted"><i class="fa fa-clock me-1"></i> {{ $approval->created_at->diffForHumans() }}</span>
+                        <span class="badge bg-light text-{{ $approval->approval == 'Approved' ? 'success' : ($approval->approval == 'Rejected' ? 'danger' : 'warning') }} border py-1 px-3 rounded-pill">
+                            {{ $approval->approval }}
+                        </span>
+                    </div>
+
+                    {{-- button approve dan reject --}}
                     <div class="row g-2">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" placeholder="Cari Nama"
-                                wire:model.live.debounce.300ms="searchNama">
+                        <div class="col-6">
+                            <button class="btn btn-success btn-sm w-100 rounded-pill py-2 fw-bold" wire:click="approve({{ $approval->id }})">
+                                <i class="fa fa-check me-1"></i> Approve
+                            </button>
                         </div>
-
-                        <div class="col-md-3">
-                            <select class="form-select" wire:model.live="filterStatus">
-                                <option value="">Semua Status</option>
-                                <option value="Absen Masuk">Absen Masuk</option>
-                                <option value="Absen Pulang">Absen Pulang</option>
-                                <option value="Izin Tidak Masuk">Izin Tidak Masuk</option>
-                                <option value="Sakit">Sakit</option>
-                                <option value="Cuti">Cuti</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3">
-                            <select class="form-select" wire:model.live="filterKeterangan">
-                                <option value="">Semua Keterangan</option>
-                                <option value="Tepat Waktu">Tepat Waktu</option>
-                                <option value="Terlambat">Terlambat</option>
-                                <option value="Lembur">Lembur</option>
-
-                            </select>
-                        </div>
-
-                        <div class="col-md-2">
-                            <input type="date" class="form-control" wire:model.live="filterTanggal">
+                        <div class="col-6">
+                            <button class="btn btn-outline-danger btn-sm w-100 rounded-pill py-2 fw-bold" wire:click="reject({{ $approval->id }})">
+                                <i class="fa fa-times me-1"></i> Reject
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+        @empty
+        <div class="col-12 text-center py-5">
+            <i class="fa-regular fa-folder-open fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Tidak ada data ditemukan.</p>
+        </div>
+        @endforelse
+    </div>
 
+    <div class="mt-5">
+        {{ $approvals->links() }}
+    </div>
 
-
-
-            @if ($updateMode)
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <input type="text" class="form-control" wire:model="name">
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select" wire:model="status">
-                                    <option value="Absen Masuk">Absen Masuk</option>
-                                    <option value="Absen Pulang">Absen Pulang</option>
-                                    <option value="Izin Tidak Masuk">Izin Tidak Masuk</option>
-                                    <option value="Sakit">Sakit</option>
-                                    <option value="Cuti">Cuti</option>
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select" wire:model="keterangan">
-                                    <option value="Tepat Waktu">Tepat Waktu</option>
-                                    <option value="Terlambat">Terlambat</option>
-                                    <option value="Lembur">Lembur</option>
-                                    <option value="Cuti">Cuti</option>
-                                    <option value="Sakit">Sakit</option>
-                                    <option value="Izin Tidak Masuk">Izin Tidak Masuk</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mt-3 text-end">
-                            <button class="btn btn-primary" wire:click="update">Update</button>
-                            <button class="btn btn-secondary" wire:click="cancel">Batal</button>
-                        </div>
-                    </div>
+    {{-- preview image --}}
+    <div class="modal fade" id="photoPreviewModal" tabindex="-1" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white border-0">
+                    <h6 class="modal-title">Bukti Lampiran</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-            @endif
-
-
-            <div class="row mb-3">
-                <div class="col-auto">
-                    @if (session()->has('message'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <strong>{{ session('message') }}</strong>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
-                        </div>
-                    @endif
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="row" wire:loading.remove>
-                        @forelse ($approvals as $approval)
-                            <div class="col-md-6 col-lg-4 mb-3">
-                                <div class="card h-100 shadow-sm">
-                                    <div class="card-body">
-
-                                        {{-- FOTO --}}
-                                        <div class="text-center mb-3">
-                                            @if ($approval->photo_name && file_exists(public_path('storage/absensi/' . $approval->photo_name)))
-                                                <img src="{{ asset('storage/absensi/' . $approval->photo_name) }}"
-                                                    class="img-thumbnail preview-img"
-                                                    style="width:100px; cursor:pointer" data-bs-toggle="modal"
-                                                    data-bs-target="#photoPreviewModal" onclick="showPreview(this.src)">
-                                            @else
-                                                <span class="text-muted">No Photo</span>
-                                            @endif
-                                        </div>
-
-                                        {{-- NAMA --}}
-                                        <h6 class="text-center fw-bold mb-1">
-                                            {{ $approval->name }}
-                                        </h6>
-
-                                        {{-- TANGGAL --}}
-                                        <p class="text-center text-muted mb-2">
-                                            <strong>
-                                                {{ \Carbon\Carbon::parse($approval->tanggal_awal)->format('d M Y') }}
-                                            </strong>
-
-                                            @if ($approval->tanggal_akhir)
-                                                <br>
-                                                s/d
-                                                {{ \Carbon\Carbon::parse($approval->tanggal_akhir)->format('d M Y') }}
-                                            @endif
-
-                                            <br>
-                                            <small>
-                                                Dibuat:
-                                                {{ $approval->created_at->format('d M Y H:i') }}
-                                            </small>
-                                        </p>
-
-                                        {{-- STATUS --}}
-                                        <div class="text-center mb-2">
-                                            <span class="badge bg-primary">
-                                                {{ $approval->status }}
-                                            </span>
-                                        </div>
-
-                                        {{-- KETERANGAN --}}
-                                        @php
-                                            $badgeClass = match ($approval->keterangan) {
-                                                'Terlambat' => 'danger',
-                                                'Lembur' => 'info',
-                                                'Izin Tidak Masuk' => 'warning',
-                                                'Cuti' => 'primary',
-                                                'Sakit' => 'secondary',
-                                                default => 'success',
-                                            };
-                                        @endphp
-
-                                        <div class="text-center mb-3">
-                                            <span class="badge bg-{{ $badgeClass }}">
-                                                {{ $approval->keterangan }}
-                                            </span>
-                                        </div>
-
-                                        {{-- APPROVAL STATUS --}}
-                                        @php
-                                            $approvalBadge = match ($approval->approval) {
-                                                'Approved' => 'success',
-                                                'Rejected' => 'danger',
-                                                default => 'warning',
-                                            };
-                                        @endphp
-
-                                        <div class="text-center mb-3">
-                                            <span class="badge bg-{{ $approvalBadge }}">
-                                                {{ $approval->approval }}
-                                            </span>
-                                        </div>
-
-                                        {{-- ACTION BUTTON --}}
-                                        <div class="d-grid gap-2">
-
-                                            {{-- Approve & Reject --}}
-                                            <div class="d-flex gap-2">
-                                                <button class="btn btn-success btn-sm w-100"
-                                                    wire:click="approve({{ $approval->id }})">
-                                                    <i class="fa fa-check"></i> Approve
-                                                </button>
-
-                                                <button class="btn btn-danger btn-sm w-100"
-                                                    wire:click="reject({{ $approval->id }})">
-                                                    <i class="fa fa-times"></i> Reject
-                                                </button>
-                                            </div>
-
-                                            {{-- Edit & Delete --}}
-                                            <div class="d-flex gap-2">
-                                                <button class="btn btn-warning btn-sm w-100"
-                                                    wire:click="edit({{ $approval->id }})">
-                                                    <i class="fa fa-edit"></i> Edit
-                                                </button>
-
-                                                <a href="#" class="btn btn-outline-danger btn-sm w-100"
-                                                    wire:click.prevent="destroy({{ $approval->id }})">
-                                                    <i class="fa fa-trash"></i> Hapus
-                                                </a>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="col">
-                                <div class="alert alert-warning text-center">
-                                    Tidak ada data absensi
-                                </div>
-                            </div>
-                        @endforelse
-                    </div>
-
-
-                    <!-- MODAL PREVIEW FOTO -->
-                    <div class="modal fade" id="photoPreviewModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Preview Foto Absensi</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <img id="previewImage" src="" class="img-fluid rounded">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="text-white bg-warning w-100 border-0 rounded-pill text-center" wire:loading>
-                        Loading...
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    {{ $approvals->links() }}
+                <div class="modal-body p-0 bg-dark text-center">
+                    <img id="previewImage" src="" class="img-fluid">
                 </div>
             </div>
         </div>
