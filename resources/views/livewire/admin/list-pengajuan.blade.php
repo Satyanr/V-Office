@@ -1,4 +1,14 @@
 <div>
+    {{-- Flash Message Notif --}}
+    @if (session()->has('message'))
+    <div class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">
+        <div class="alert alert-success border-0 shadow-lg rounded-pill px-4 py-2 d-flex align-items-center animate__animated animate__fadeInDown">
+            <i class="fa fa-check-circle me-2"></i>
+            <span>{{ session('message') }}</span>
+            <button type="button" class="btn-close ms-3 small" data-bs-dismiss="alert" aria-label="Close" style="font-size: 0.5rem;"></button>
+        </div>
+    </div>
+    @endif
     <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 p-md-4 bg-white">
         <div class="row g-3">
             <div class="col-md-4">
