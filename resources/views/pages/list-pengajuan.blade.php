@@ -1,34 +1,29 @@
 @extends('layouts.main')
 
 @push('css')
-    <style>
-        .preview-img {
-            transition: transform .2s ease;
-        }
-
-        .preview-img:hover {
-            transform: scale(1.05);
-        }
-    </style>
+<style>
+    body { background-color: #f4f7fe; }
+    .page-title { font-weight: 800; color: #1B2559; letter-spacing: -0.02em; }
+</style>
 @endpush
 
 @section('content')
-    <div class="container my-5">
-        <div class="shadow p-3 mb-5 bg-body-tertiary rounded-4">
-            <div class="row text-center mb-5">
-                <div class="col text-center">
-                    <h4>List Pengajuan</h4>
-                </div>
-            </div>
-            @livewire('admin.list-pengajuan')
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center text-md-start">
+            <h2 class="page-title mb-1">List Pengajuan</h2>
+            <p class="text-muted">Kelola data kehadiran dan izin karyawan V-Office</p>
         </div>
     </div>
+
+    @livewire('admin.list-pengajuan')
+</div>
 @endsection
 
 @push('js')
-    <script>
-        function showPreview(src) {
-            document.getElementById('previewImage').src = src;
-        }
-    </script>
+<script>
+    function showPreview(src) {
+         document.getElementById('previewImage').src = src;
+    }
+</script>
 @endpush
