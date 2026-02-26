@@ -81,7 +81,7 @@ class AbsensiController extends Controller
             $keterangan = 'Lembur';
         } elseif ($request->status === 'Absen Masuk' && $waktu->format('H:i') > '08:30') {
             $keterangan = 'Terlambat';
-        } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') > '17:00') {
+        } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') > '19:00') {
             $keterangan = 'Lembur';
         } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') < '16:30') {
             $keterangan = 'Pulang Awal';
