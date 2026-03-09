@@ -9,7 +9,10 @@
             --text-dark: #1e293b;
         }
 
-        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+        }
 
         .main-card {
             border: none;
@@ -32,7 +35,8 @@
             display: block;
         }
 
-        .form-control, .form-select {
+        .form-control,
+        .form-select {
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 0.55rem 0.8rem;
@@ -54,7 +58,7 @@
         .flex-textarea-container {
             display: flex;
             flex-direction: column;
-            flex-grow: 1; 
+            flex-grow: 1;
         }
 
         .flex-textarea-container textarea {
@@ -110,7 +114,9 @@
             transition: all 0.2s;
         }
 
-        .btn-submit:hover { background: #1d4ed8; }
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
     </style>
 @endpush
 
@@ -125,12 +131,13 @@
             <div class="card-body p-4 p-lg-5">
                 <form method="POST" action="{{ route('absen.store') }}" enctype="multipart/form-data">
                     @csrf
-                    
+
                     <div class="row g-4 equal-height-row">
                         <div class="col-lg-6 form-side">
                             <div class="form-group-custom">
                                 <label class="form-label">Nama Lengkap</label>
-                                <input type="text" name="name" class="form-control" list="list-karyawan" placeholder="Ketik nama anda..." required>
+                                <input type="text" name="name" class="form-control" list="list-karyawan"
+                                    placeholder="Ketik nama anda..." required>
                                 <datalist id="list-karyawan">
                                     @foreach ($karyawans as $karyawan)
                                         <option value="{{ $karyawan->name }}"></option>
@@ -182,7 +189,8 @@
                                 <i class="fa-solid fa-cloud-arrow-up text-primary fs-4 mb-1"></i>
                                 <span class="fw-bold text-dark small">Upload Foto / Dokumen</span>
                                 <span class="text-muted" style="font-size: 0.7rem;">JPG / PNG, maksimal 2MB</span>
-                                <input type="file" name="image" id="imageInput" class="d-none" accept="image/*" onchange="previewFoto(this)">
+                                <input type="file" name="image" id="imageInput" class="d-none" accept="image/*"
+                                    onchange="previewFoto(this)">
                             </div>
                         </div>
                     </div>
@@ -214,7 +222,8 @@
                 };
                 reader.readAsDataURL(input.files[0]);
             } else {
-                box.innerHTML = '<div class="text-center text-white-50"><i class="fa-solid fa-image fs-1 mb-2"></i><p class="small mb-0">Belum ada Gambar</p></div>';
+                box.innerHTML =
+                    '<div class="text-center text-white-50"><i class="fa-solid fa-image fs-1 mb-2"></i><p class="small mb-0">Belum ada Gambar</p></div>';
             }
         }
     </script>

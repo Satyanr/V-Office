@@ -13,7 +13,7 @@ class AbsensiController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['absen', 'store']);
+        $this->middleware('auth')->except(['absen', 'store', 'pengajuan']);
     }
 
     // VIEW TIDAK PERLU DATA LAGI
@@ -58,11 +58,20 @@ class AbsensiController extends Controller
 
         $imageName = null;
 
-        if ($request->filled('image')) {
+        if ($request->hasFile('image')) {
+            // upload file biasa (pengajuan)
+            $file = $request->file('image');
+
+            $imageName = 'absensi_' . time() . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path('storage/absensi'), $imageName);
+        } elseif ($request->filled('image')) {
+            // base64 image (absensi kamera)
             $image = preg_replace('/^data:image\/\w+;base64,/', '', $request->image);
             $image = str_replace(' ', '+', $image);
 
             $imageName = 'absensi_' . time() . '_' . Str::random(5) . '.png';
+
             $path = public_path('storage/absensi');
 
             if (!is_dir($path)) {
@@ -109,6 +118,6 @@ class AbsensiController extends Controller
             ]);
         }
 
-        return redirect()->route('absensi')->with('success', 'Absensi berhasil');
+        return redirect()->route('absensi')->with('success', 'Berhasil dikirim');
     }
 }

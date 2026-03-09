@@ -37,11 +37,11 @@
                                 </ul>
                             </div>
                         </div>
-                        <div class="col d-flex">
+                        {{-- <div class="col d-flex">
                             <a class="btn btn-outline-light border-0" href="{{ route('layanan') }}">
                                 <i class="fa-solid fa-clipboard-list"></i> <br> Layanan
                             </a>
-                        </div>
+                        </div> --}}
                     @else
                         <div class="col d-flex">
                             <a class="btn btn-outline-light border-0" href="{{ route('logout') }}"
@@ -77,7 +77,37 @@
                             </div>
                         </a>
                     </div>
-                    @if (auth()->user()->role == 'Admin' || auth()->user()->role == 'Petugas')
+                    <div class="col d-flex me-2" style="margin-left: auto;">
+                        <a href="{{ route('list-pengajuan') }}"
+                            class="btn btn-outline-light border-0 position-relative">
+
+                            {{-- Icon --}}
+                            <div class="row">
+                                <div class="col">
+                                    <i class="fa-solid fa-users-between-lines"></i>
+
+                                    {{-- Badge Pending --}}
+                                    @if ($pendingCount > 0)
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle 
+                                 badge rounded-pill bg-danger">
+                                            {{ $pendingCount }}
+                                        </span>
+                                    @endif
+
+                                </div>
+                            </div>
+
+                            {{-- Text --}}
+                            <div class="row">
+                                <div class="col">
+                                    Pengajuan
+                                </div>
+                            </div>
+
+                        </a>
+                    </div>
+                    @if (auth()->user()->role == 'Admin')
                         <div class="col d-flex me-2" style="margin-left: auto;">
                             <a href="{{ route('transaksi') }}" class="btn btn-outline-light border-0">
                                 <div class="row">
@@ -111,9 +141,43 @@
                             </a>
                         </div>
                     @endif
+                    {{-- Button Pengajuan / Absen --}}
+                    @if (request()->routeIs('pengajuan'))
+                        <div class="col d-flex me-2" style="margin-left: auto;">
+                            <a href="{{ route('absensi') }}" class="btn btn-outline-light border-0 ms-2">
+                                <div class="row">
+                                    <div class="col">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        Absen
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    @else
+                        <div class="col d-flex me-2" style="margin-left: auto;">
+                            <a href="{{ route('pengajuan') }}" class="btn btn-outline-light border-0 ms-2">
+                                <div class="row">
+                                    <div class="col">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        Pengajuan
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    @endif
                 @else
                     <div class="col d-flex me-2" style="margin-left: auto;">
-                        <a href="{{ route('login') }}" class="btn btn-outline-light border-0" type="button">
+
+                        {{-- Button Login --}}
+                        <a href="{{ route('login') }}" class="btn btn-outline-light border-0">
                             <div class="row">
                                 <div class="col">
                                     <i class="fas fa-user"></i>
@@ -125,6 +189,36 @@
                                 </div>
                             </div>
                         </a>
+
+                        {{-- Button Pengajuan / Absen --}}
+                        @if (request()->routeIs('pengajuan'))
+                            <a href="{{ route('absensi') }}" class="btn btn-outline-light border-0 ms-2">
+                                <div class="row">
+                                    <div class="col">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        Absen
+                                    </div>
+                                </div>
+                            </a>
+                        @else
+                            <a href="{{ route('pengajuan') }}" class="btn btn-outline-light border-0 ms-2">
+                                <div class="row">
+                                    <div class="col">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        Pengajuan
+                                    </div>
+                                </div>
+                            </a>
+                        @endif
+
                     </div>
                 @endif
             </div>

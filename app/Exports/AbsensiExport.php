@@ -43,10 +43,11 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
                 'tepat_waktu' => $rows->where('keterangan', 'Tepat Waktu')->count(),
                 'terlambat' => $rows->where('keterangan', 'Terlambat')->count(),
                 'lembur' => $rows->where('keterangan', 'Lembur')->count(),
+                'pulang_awal' => $rows->where('keterangan', 'Pulang Awal')->count(),
                 'izin' => $rows->where('status', 'Izin Tidak Masuk')->count(),
                 'sakit' => $rows->where('status', 'Sakit')->count(),
                 'cuti' => $rows->where('status', 'Cuti')->count(),
-                'total' => $rows->count(),
+                'total' => $rows->where('status', '!=', 'Absen Pulang')->count(),
             ];
         });
 
@@ -163,10 +164,10 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
                 $rekapSheet->setTitle('Rekap Absensi');
 
                 // Header
-                $rekapSheet->fromArray([['Nama', 'Tepat Waktu', 'Terlambat', 'Lembur', 'Total']], null, 'A1');
+                $rekapSheet->fromArray([['Nama', 'Tepat Waktu', 'Terlambat', 'Lembur', 'Pulang Awal', 'Izin', 'Sakit', 'Cuti', 'Total']], null, 'A1');
 
                 // Style header
-                $rekapSheet->getStyle('A1:E1')->applyFromArray([
+                $rekapSheet->getStyle('A1:I1')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -177,19 +178,19 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
                 $row = 2;
 
                 foreach ($this->summary as $name => $count) {
-                    $rekapSheet->fromArray([[$name, $count['tepat_waktu'], $count['terlambat'], $count['lembur'], $count['total']]], null, 'A' . $row);
+                    $rekapSheet->fromArray([[$name, $count['tepat_waktu'], $count['terlambat'], $count['lembur'], $count['pulang_awal'], $count['izin'], $count['sakit'], $count['cuti'], $count['total']]], null, 'A' . $row);
 
                     $row++;
                 }
 
                 // Auto width
-                foreach (range('A', 'E') as $col) {
+                foreach (range('A', 'I') as $col) {
                     $rekapSheet->getColumnDimension($col)->setAutoSize(true);
                 }
 
                 // Border
                 $rekapSheet
-                    ->getStyle('A1:E' . ($row - 1))
+                    ->getStyle('A1:I' . ($row - 1))
                     ->getBorders()
                     ->getAllBorders()
                     ->setBorderStyle(Border::BORDER_THIN);
