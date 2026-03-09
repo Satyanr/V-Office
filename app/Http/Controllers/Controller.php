@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrderTbl;
+use App\Models\ApprovalTbl;
 use Picqer\Barcode\BarcodeGeneratorHTML;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -38,7 +39,8 @@ class Controller extends BaseController
 
     public function listpengajuan()
     {
-        return view('pages.list-pengajuan');
+        $pendingCount = ApprovalTbl::where('approval', 'Pending')->count();
+        return view('pages.list-pengajuan', compact('pendingCount'));
     }
 
     public function dashboard()
