@@ -20,6 +20,7 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
     protected $toDate;
     protected $data; // SIMPAN DATA FILTER
     protected $summary;
+    protected $reward;
 
     public function __construct($fromDate = null, $toDate = null)
     {
@@ -40,7 +41,7 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
         // ===== SUMMARY PER NAMA =====
         $this->summary = $this->data->groupBy('name')->map(function ($rows) {
             return [
-                'tepat_waktu' => $rows->where('keterangan', 'Tepat Waktu')->count(),
+                'tepat_waktu' => $rows->where('status', 'Absen Masuk')->where('keterangan', 'Tepat Waktu')->count(),
                 'terlambat' => $rows->where('keterangan', 'Terlambat')->count(),
                 'lembur' => $rows->where('keterangan', 'Lembur')->count(),
                 'pulang_awal' => $rows->where('keterangan', 'Pulang Awal')->count(),
@@ -50,6 +51,33 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
                 'total' => $rows->where('status', '!=', 'Absen Pulang')->count(),
             ];
         });
+
+        $this->reward = $this->data
+            ->where('status', 'Absen Masuk')
+            ->where('keterangan', 'Tepat Waktu')
+            ->groupBy('name')
+            ->map(function ($rows, $name) {
+                $avgSeconds = $rows->avg(function ($row) {
+                    return strtotime(date('H:i:s', strtotime($row->waktu_masuk))) - strtotime('00:00:00');
+                });
+
+                return [
+                    'name' => $name, // 🔥 WAJIB ADA
+                    'avg_time' => gmdate('H:i', $avgSeconds),
+                    'raw_avg' => $avgSeconds,
+                    'total_tepat_waktu' => $rows->count(),
+                ];
+            })
+            ->sort(function ($a, $b) {
+                // PRIORITAS 1: jumlah tepat waktu
+                if ($a['total_tepat_waktu'] !== $b['total_tepat_waktu']) {
+                    return $b['total_tepat_waktu'] <=> $a['total_tepat_waktu'];
+                }
+
+                // PRIORITAS 2: rata-rata jam
+                return $a['raw_avg'] <=> $b['raw_avg'];
+            })
+            ->values();
 
         return $this->data;
     }
@@ -191,6 +219,53 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
                 // Border
                 $rekapSheet
                     ->getStyle('A1:I' . ($row - 1))
+                    ->getBorders()
+                    ->getAllBorders()
+                    ->setBorderStyle(Border::BORDER_THIN);
+
+                /* ================= SHEET REWARD ================= */
+                $rewardSheet = $spreadsheet->createSheet();
+                $rewardSheet->setTitle('Reward Bulanan');
+
+                // Header
+                $rewardSheet->fromArray([['Ranking', 'Nama', 'Rata-rata Jam Masuk', 'Jumlah Tepat Waktu']], null, 'A1');
+
+                // Style header
+                $rewardSheet->getStyle('A1:C1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                $row = 2;
+                $rank = 1;
+
+                foreach ($this->reward as $data) {
+                    $rewardSheet->fromArray(
+                        [
+                            [
+                                $rank,
+                                $data['name'], // 🔥 INI YANG DIPAKAI
+                                $data['avg_time'],
+                                $data['total_tepat_waktu'],
+                            ],
+                        ],
+                        null,
+                        'A' . $row,
+                    );
+
+                    $rank++;
+                    $row++;
+                }
+
+                foreach (range('A', 'D') as $col) {
+                    $rewardSheet->getColumnDimension($col)->setAutoSize(true);
+                }
+
+                $rewardSheet
+                    ->getStyle('A1:D' . ($row - 1))
                     ->getBorders()
                     ->getAllBorders()
                     ->setBorderStyle(Border::BORDER_THIN);

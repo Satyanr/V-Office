@@ -88,11 +88,11 @@ class AbsensiController extends Controller
 
         if ($hari >= 6) {
             $keterangan = 'Lembur';
-        } elseif ($request->status === 'Absen Masuk' && $waktu->format('H:i') > '08:30') {
+        } elseif ($request->status === 'Absen Masuk' && $waktu->format('H:i') > '08:15') {
             $keterangan = 'Terlambat';
         } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') > '19:00') {
             $keterangan = 'Lembur';
-        } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') < '16:30') {
+        } elseif ($request->status === 'Absen Pulang' && $waktu->format('H:i') < '17:00') {
             $keterangan = 'Pulang Awal';
         } elseif (in_array($request->status, ['Izin Tidak Masuk', 'Sakit', 'Cuti'])) {
             $keterangan = $request->status;
