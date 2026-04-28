@@ -2,33 +2,29 @@
 
 @push('css')
     <style>
-        .preview-img {
-            transition: transform .2s ease;
-        }
-
-        .preview-img:hover {
-            transform: scale(1.05);
-        }
+        body { background-color: #f1f5f9; }
+        .page-header { margin-bottom: 2rem; }
+        #nprogress .bar { background: #6366f1 !important; height: 3px !important; }
     </style>
 @endpush
 
 @section('content')
-    <div class="container my-5">
-        <div class="shadow p-3 mb-5 bg-body-tertiary rounded-4">
-            <div class="row text-center mb-5">
-                <div class="col text-center">
-                    <h4>Rekap Absensi</h4>
-                </div>
-            </div>
-            @livewire('admin.rekapabsensi')
-        </div>
+    <div class="container py-5">
+        
+
+        @livewire('admin.rekapabsensi')
     </div>
 @endsection
 
 @push('js')
     <script>
         function showPreview(src) {
-            document.getElementById('previewImage').src = src;
+            const img = document.getElementById('previewImage');
+            img.style.opacity = '0';
+            img.src = src;
+            img.onload = function() {
+                img.style.opacity = '1';
+            }
         }
     </script>
 @endpush
