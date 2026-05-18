@@ -223,6 +223,156 @@ class AbsensiExport implements FromCollection, WithHeadings, WithEvents, WithCus
                     ->getAllBorders()
                     ->setBorderStyle(Border::BORDER_THIN);
 
+                /* ================= SHEET KETERANGAN PER TANGGAL ================= */
+                $keteranganSheet = $spreadsheet->createSheet();
+                $keteranganSheet->setTitle('Keterangan Harian');
+
+                /*
+|--------------------------------------------------------------------------
+| Ambil semua tanggal unik
+|--------------------------------------------------------------------------
+*/
+                $dates = $this->data
+                    ->sortBy('waktu_masuk')
+                    ->map(function ($item) {
+                        return date('Y-m-d', strtotime($item->waktu_masuk));
+                    })
+                    ->unique()
+                    ->values();
+
+                /*
+|--------------------------------------------------------------------------
+| Header
+|--------------------------------------------------------------------------
+*/
+                $headers = ['Nama'];
+
+                foreach ($dates as $date) {
+                    $headers[] = date('d-m-Y', strtotime($date));
+                }
+
+                $keteranganSheet->fromArray([$headers], null, 'A1');
+
+                /*
+|--------------------------------------------------------------------------
+| Style Header
+|--------------------------------------------------------------------------
+*/
+                $lastColumn = Coordinate::stringFromColumnIndex(count($headers));
+
+                $keteranganSheet->getStyle("A1:{$lastColumn}1")->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                /*
+|--------------------------------------------------------------------------
+| Group Data Per Nama
+|--------------------------------------------------------------------------
+*/
+                $groupedByName = $this->data->groupBy('name');
+
+                $row = 2;
+
+                foreach ($groupedByName as $name => $items) {
+
+                    $rowData = [$name];
+
+                    foreach ($dates as $date) {
+
+                        $dailyData = $items->filter(function ($item) use ($date) {
+                            return date('Y-m-d', strtotime($item->waktu_masuk)) == $date;
+                        });
+
+                        $keterangan = '-';
+
+                        /*
+        |--------------------------------------------------------------------------
+        | PRIORITAS:
+        | 1. Terlambat
+        | 2. Lembur
+        | 3. Tepat Waktu
+        |--------------------------------------------------------------------------
+        */
+
+                        if ($dailyData->where('keterangan', 'Terlambat')->count() > 0) {
+
+                            $keterangan = 'Terlambat';
+                        } elseif ($dailyData->where('keterangan', 'Lembur')->count() > 0) {
+
+                            $keterangan = 'Lembur';
+                        } elseif ($dailyData->where('keterangan', 'Tepat Waktu')->count() > 0) {
+
+                            $keterangan = 'Tepat Waktu';
+                        }
+
+                        $rowData[] = $keterangan;
+                    }
+
+                    $keteranganSheet->fromArray([$rowData], null, 'A' . $row);
+
+                    $row++;
+                }
+
+                /*
+|--------------------------------------------------------------------------
+| Auto Width
+|--------------------------------------------------------------------------
+*/
+                foreach (range(1, count($headers)) as $colIndex) {
+
+                    $columnLetter = Coordinate::stringFromColumnIndex($colIndex);
+
+                    $keteranganSheet
+                        ->getColumnDimension($columnLetter)
+                        ->setAutoSize(true);
+                }
+
+                /*
+|--------------------------------------------------------------------------
+| Border
+|--------------------------------------------------------------------------
+*/
+                $keteranganSheet
+                    ->getStyle("A1:{$lastColumn}" . ($row - 1))
+                    ->getBorders()
+                    ->getAllBorders()
+                    ->setBorderStyle(Border::BORDER_THIN);
+
+                /*
+|--------------------------------------------------------------------------
+| Alignment
+|--------------------------------------------------------------------------
+*/
+                $keteranganSheet
+                    ->getStyle("A1:{$lastColumn}" . ($row - 1))
+                    ->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $keteranganSheet
+                    ->getStyle("A1:{$lastColumn}" . ($row - 1))
+                    ->getAlignment()
+                    ->setVertical(Alignment::VERTICAL_CENTER);
+
+                /*
+|--------------------------------------------------------------------------
+| Freeze Header & Nama
+|--------------------------------------------------------------------------
+*/
+                $keteranganSheet->freezePane('B2');
+
+                /*
+|--------------------------------------------------------------------------
+| Auto Filter
+|--------------------------------------------------------------------------
+*/
+                $keteranganSheet->setAutoFilter("A1:{$lastColumn}1");
+
                 /* ================= SHEET REWARD ================= */
                 $rewardSheet = $spreadsheet->createSheet();
                 $rewardSheet->setTitle('Reward Bulanan');
