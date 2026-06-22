@@ -31,12 +31,6 @@ class AbsensiController extends Controller
     {
         $now = Carbon::now('Asia/Jakarta');
 
-        if ($now->format('H:i') < '07:00') {
-            return back()->withErrors([
-                'absen' => 'Absensi hanya dapat dilakukan mulai pukul 07:00 WIB',
-            ]);
-        }
-
         $request->validate([
             'name' => ['required', fn($attr, $value, $fail) => !KaryawanTbl::where('name', $value)->exists() && $fail('Nama karyawan tidak terdaftar.')],
             'status' => 'required',
