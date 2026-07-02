@@ -213,9 +213,9 @@
                                     </button>
                                 </div>
 
-                                <div class="form-text mt-2" id="submitInfo">
+                                {{-- <div class="form-text mt-2" id="submitInfo">
                                     ⏰ Absensi hanya dapat dilakukan mulai pukul <b>07:00 WIB</b>.
-                                </div>
+                                </div> --}}
 
                                 <div class="form-text mt-1 fw-semibold" id="countdown0700"></div>
 
@@ -430,7 +430,7 @@
             const hours = date.getHours();
             const minutes = date.getMinutes();
 
-            return (hours > 7 || (hours === 7 && minutes >= 00));
+            return (hours > 1 || (hours === 1 && minutes >= 00));
         }
 
         function updateSubmitTimeRule() {
@@ -439,7 +439,7 @@
                 $('#submitInfo')
                     .removeClass('text-muted')
                     .addClass('text-danger')
-                    .html('⛔ Absensi hanya dapat dilakukan mulai pukul <b>07:00 WIB</b>.');
+                    .html('⛔ Absensi hanya dapat dilakukan mulai pukul <b>01:00 WIB</b>.');
             } else {
                 $('#submitInfo')
                     .removeClass('text-danger')
